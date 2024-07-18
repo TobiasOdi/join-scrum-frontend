@@ -14,7 +14,6 @@
     <!-- ============================== SCRIPTS ================================= -->
     <script src="./mainScript.js"></script>
     <script src="./js/contacts.js"></script>
-    <script src="./js/mini_backend.js"></script>
 
     <!-- ============================ Favicon =========================== -->
     <link rel="apple-touch-icon" sizes="180x180" href="./img/favicon/apple-touch-icon.png"/>
@@ -26,7 +25,8 @@
     <meta name="theme-color" content="#2a3647" />
   </head>
 
-  <body onload="init()">
+  <body>
+  <!-- body onload="init()" -->
 
     <!-- ================================== STARTSCREEN  ==================================== -->
     <div class="startScreen">
@@ -70,7 +70,7 @@
           <form name="login_form" onsubmit="login();return false">
             <div class="inputContainer">
               <div class="inputFieldContainer">
-                <input id="emailLog" class="inputFields" type="email" name="email" placeholder="Email" required/>
+                <input id="emailLog" class="inputFields" type="text" name="email" placeholder="Email" required/>
                 <img src="img/letter.svg" class="img" />
               </div>
             </div>
@@ -93,7 +93,7 @@
             </div>
 
             <div class="loginButtons">
-              <button type="submit" class="buttonDark">
+              <button type="submit" class="buttonDark" id="loginButton">
                 <div class="buttonDarkText">Log in</div>
               </button>
               <button type="button" onclick="guestLogin()" class="buttonLight">

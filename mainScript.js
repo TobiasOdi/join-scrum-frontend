@@ -51,7 +51,7 @@ async function includeHTML() {
             element.innerHTML = 'Page not found';
         }
     }
-    await init();
+    //await init();
     counters();
 }
 
@@ -59,7 +59,7 @@ async function includeHTML() {
 /**
  * This function accesses the users, tasks and contacts data that is stored on the ftp server.
  */
-async function init() {
+/* async function init() {
     setURL('/smallest_backend_ever');
     await downloadFromServer();
     users = JSON.parse(backend.getItem('users')) || [];
@@ -67,7 +67,7 @@ async function init() {
     contacts = JSON.parse(backend.getItem('contacts')) || [];
     categories = JSON.parse(backend.getItem('categories')) || [];
     setInterval(setUserColor, 200);
-}
+} */
 
 /**
  * This function sets the color of the user. Border around the user icon in the top right corner.
@@ -160,7 +160,7 @@ async function validateSignup(userData, contactData, user, name, surname, email,
   * This function brings you back to the main login.html.
   */
 function backToLoginScreen() {
-    window.location.href = 'https://join.tobias-odermatt.ch/login.html'; // => IMMER ANPASSEN!!!
+    window.location.href = 'login.html'; // => IMMER ANPASSEN!!!
 }
 
 /**
@@ -198,7 +198,7 @@ async function saveUsers() {
  * This event listener lets you lets you login with the enter key.
  */
 window.addEventListener('keydown', (event) => {
-    if(window.location.href === 'https://join.tobias-odermatt.ch/login.html') { // => IMMER ANPASSEN!!!
+    if(window.location.href === 'login.html') { // => IMMER ANPASSEN!!!
         if(event.keyCode == 13) {
             login();
         }
@@ -216,83 +216,75 @@ function goToSignup() {
  * This function logs you into an existing user account.
  */
 async function login() {
+    disableFields();
     let emailLog = document.getElementById('emailLog');
     let passwordLog = document.getElementById('passwordLog');
-    //disableFields();
+
     let fd = new FormData();
-    let token = '{{ csrf_token }}';
+    //let token = '{{ csrf_token }}';
+    const csrf_token = getCookie("csrftoken");
     fd.append('email', emailLog.value);
     fd.append('password', passwordLog.value);
-    fd.append('csrfmiddlewaretoken', token);
-
+    fd.append('X-CSRFToken', csrf_token);
+    console.log(csrf_token);
     if(emailLog.value == '' || passwordLog.value == '') {
         displaySnackbar('missingSignedUp');
     } else {
         try {
-            //loading.classList.remove('displayNone');
-            let response = await fetch('', {
+            let response = await fetch('http://127.0.0.1:8000/login/', {
               method: 'POST',
               body: fd
             });
+            localStorage.setItem('token', response['token']);
+            console.log(response);
             let data = await response.json();
-            let json = JSON.parse(data);
-      
-            if(json.fields.email == emailLog.value) {
-              window.location.href = "http://127.0.0.1:8000/index.html";
-              //loading.classList.add('displayNone');
+            console.log(data);
+            //let json = JSON.parse(data);
+            //console.log(json);
+            if(data.status == 1) {
+              displaySnackbar('pwEmailIncorrect');
+            } else if(data.status == 2) {
+                displaySnackbar('userDoesNotExist');
+            } else {
+                window.location.href = "http://127.0.0.1:5500/index.html";
             }
-            //enableFields();
-              
+            enableFields();  
           } catch(error) {
-            displaySnackbar('pwEmailIncorrect');
-            displaySnackbar('userDoesNotExist')
             console.log('An error occured', error);
-            loginNotSuccessfull.classList.add('show');
-            loading.classList.add('displayNone');
-            //enableFields();
+            enableFields(); 
           }    
     }
-
-    //let user = users.find(u => u.email == emailLog.value && u.password == passwordLog.value);
-    //let existingUser = users.find(u => u.email == emailLog.value);
-    //let existingPw = users.find(u => u.password == passwordLog.value);
-    //validateLogin(emailLog, passwordLog, existingUser, existingPw, user);
 }
 
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+
 function disableFields() {
-    document.getElementById('usernamefield').disabled = true;
-    document.getElementById('passwordfield').disabled = true;
+    document.getElementById('emailLog').disabled = true;
+    document.getElementById('passwordLog').disabled = true;
     document.getElementById('loginButton').disabled = true;
   }
 
-  function enableFields() {
-    document.getElementById('usernamefield').disabled = false;
-    document.getElementById('passwordfield').disabled = false;
+function enableFields() {
+    document.getElementById('emailLog').disabled = false;
+    document.getElementById('passwordLog').disabled = false;
     document.getElementById('loginButton').disabled = false;  
 }
 
-/**
- * This function validates the login form and throws an error if necessary.
- */
-//function validateLogin(emailLog, passwordLog, existingUser, existingPw, user) {
-//    if(emailLog.value == '' || passwordLog.value == '') {
-//        displaySnackbar('missingSignedUp');
-//    } else {
-//        if(existingUser && !existingPw) {
-//            displaySnackbar('pwEmailIncorrect');
-//        } else if(!existingUser) {
-//            displaySnackbar('userDoesNotExist')
-//        } else if(user) {
-//            //********************************** */
-//            setUserName(user);
-//           //********************************** */
-//            let currentUser = users.indexOf(existingUser);
-//            let userId = users[currentUser]['userId'];
-//            let userColor = users[currentUser]['userColor'];
-//            window.location.href = 'https://join.tobias-odermatt.ch/index.html?id=' + userId // => IMMER ANPASSEN!!!
-//        }
-//    }
-//}
 
 /**
  * This function saves the name of the user in the local storage of the browser that is login in 

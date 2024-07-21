@@ -7,13 +7,13 @@
  */
 function generateToDoHTMLToDo(element, taskStatus) {
     return `
-        <div class="boardContainer" draggable="true" ondragstart="startDragging(${element["taskId"]})" onclick="openTask(${element["taskId"]})">
+        <div class="boardContainer" draggable="true" ondragstart="startDragging(${element["id"]})" onclick="openTask(${element["id"]})">
             <div class="boardContainerTop">
                 <div style = "background-color:${element["categoryColor"]}">
                     <div>${element["category"]}</div>
                 </div>
                 <div onclick="doNotOpenTask(event)">
-                     <div id="pushToNextCategory${element["taskId"]}" onclick="pushToNextCategory('${taskStatus}', ${element["taskId"]})">
+                     <div id="pushToNextCategory${element["id"]}" onclick="pushToNextCategory('${taskStatus}', ${element["id"]})">
                         <img src="./img/next.svg">
                     </div>
                 </div>
@@ -25,10 +25,10 @@ function generateToDoHTMLToDo(element, taskStatus) {
             <div class="boardContainerDescripton">
                 <span>${element["description"]}</span>
             </div>
-            <div id="boardContainerProgress(${element["taskId"]})" class="boardContainerProgress">
+            <div id="boardContainerProgress(${element["id"]})" class="boardContainerProgress">
             </div>
             <div class="boardContainerUserBubbles">
-                <div class="userBubble" id="userBubble${element["taskId"]}"></div>
+                <div class="userBubble" id="userBubble${element["id"]}"></div>
                 <div>
                     <img class="priorityImg" src="./img/${element["priorityValue"]}.svg">
                 </div>
@@ -45,16 +45,16 @@ function generateToDoHTMLToDo(element, taskStatus) {
  */
 function generateToDoHTML(element, taskStatus) {
     return `
-        <div class="boardContainer" draggable="true" ondragstart="startDragging(${element["taskId"]})" onclick="openTask(${element["taskId"]})">
+        <div class="boardContainer" draggable="true" ondragstart="startDragging(${element["id"]})" onclick="openTask(${element["id"]})">
             <div class="boardContainerTop">
                 <div style = "background-color:${element["categoryColor"]}">
                     <div>${element["category"]}</div>
                 </div>
                 <div onclick="doNotOpenTask(event)">
-                    <div id="pushToPreviousCategory${element["taskId"]}" onclick="pushToPreviousCategory('${taskStatus}', ${element["taskId"]})">
+                    <div id="pushToPreviousCategory${element["id"]}" onclick="pushToPreviousCategory('${taskStatus}', ${element["id"]})">
                         <img src="./img/previous.svg">
                     </div>
-                    <div id="pushToNextCategory${element["taskId"]}" onclick="pushToNextCategory('${taskStatus}', ${element["taskId"]})">
+                    <div id="pushToNextCategory${element["id"]}" onclick="pushToNextCategory('${taskStatus}', ${element["id"]})">
                         <img src="./img/next.svg">
                     </div>
                 </div>
@@ -66,10 +66,10 @@ function generateToDoHTML(element, taskStatus) {
             <div class="boardContainerDescripton">
                 <span>${element["description"]}</span>
             </div>
-            <div id="boardContainerProgress(${element["taskId"]})" class="boardContainerProgress">
+            <div id="boardContainerProgress(${element["id"]})" class="boardContainerProgress">
             </div>
             <div class="boardContainerUserBubbles">
-                <div class="userBubble" id="userBubble${element["taskId"]}"></div>
+                <div class="userBubble" id="userBubble${element["id"]}"></div>
                 <div>
                     <img class="priorityImg" src="./img/${element["priorityValue"]}.svg">
                 </div>
@@ -86,13 +86,13 @@ function generateToDoHTML(element, taskStatus) {
  */
 function generateToDoHTMLDone(element, taskStatus) {
     return `
-        <div class="boardContainer" draggable="true" ondragstart="startDragging(${element["taskId"]})" onclick="openTask(${element["taskId"]})">
+        <div class="boardContainer" draggable="true" ondragstart="startDragging(${element["id"]})" onclick="openTask(${element["id"]})">
             <div class="boardContainerTop">
                 <div style = "background-color:${element["categoryColor"]}">
                     <div>${element["category"]}</div>
                 </div>
                 <div onclick="doNotOpenTask(event)">
-                    <div id="pushToPreviousCategory${element["taskId"]}" onclick="pushToPreviousCategory('${taskStatus}', ${element["taskId"]})">
+                    <div id="pushToPreviousCategory${element["id"]}" onclick="pushToPreviousCategory('${taskStatus}', ${element["id"]})">
                         <img src="./img/previous.svg">
                     </div>
                 </div>
@@ -104,10 +104,10 @@ function generateToDoHTMLDone(element, taskStatus) {
             <div class="boardContainerDescripton">
                 <span>${element["description"]}</span>
             </div>
-            <div id="boardContainerProgress(${element["taskId"]})" class="boardContainerProgress">
+            <div id="boardContainerProgress(${element["id"]})" class="boardContainerProgress">
             </div>
             <div class="boardContainerUserBubbles">
-                <div class="userBubble" id="userBubble${element["taskId"]}"></div>
+                <div class="userBubble" id="userBubble${element["id"]}"></div>
                 <div>
                     <img class="priorityImg" src="./img/${element["priorityValue"]}.svg">
                 </div>

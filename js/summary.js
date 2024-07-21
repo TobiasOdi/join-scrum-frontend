@@ -84,11 +84,11 @@ function urgentCounter() {
  */
 function deadlineDate() {
     let sortedDueDate = tasks
-        .filter((t) => t.dueDate)
-        .map((t) => new Date(t.dueDate))
+        .filter((t) => t.due_date)
+        .map((t) => new Date(t.due_date))
         .filter((d) => !isNaN(d.getTime()))
         .sort((a, b) => a.getTime() - b.getTime());
-        
+    
     if (sortedDueDate.length === 0) {
         // console.log("No valid due dates found.");
         return;

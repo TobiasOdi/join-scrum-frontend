@@ -2,6 +2,31 @@
 let users = [];
 let tasks = [];
 let subtasksLoad = [];
+let assignedContacts = [];
+/* let categories = [
+    {
+        "categoryName": "Marketing",
+        "color": "rgb(0, 56, 255)",
+        "categoryType": "default"
+    },
+    {
+        "categoryName": "Media",
+        "color": "rgb(255, 199, 2)",
+        "categoryType": "default"
+    },    {
+        "categoryName": "Backoffice",
+        "color": "rgb(31, 215, 193)",
+        "categoryType": "default"
+    },    {
+        "categoryName": "Design",
+        "color": "rgb(255, 122, 0)",
+        "categoryType": "default"
+    },    {
+        "categoryName": "Sales",
+        "color": "rgb(252, 113, 255)",
+        "categoryType": "default"
+    }
+]; */
 
 let id;
 
@@ -10,15 +35,6 @@ let white = "#FFFFFF";
 let orange = "#FF3D00";
 let lightorange = "#FFA800";
 let green = "#7AE229";  
-
-/* ===================== DATABASE JSON ========================= */
-// {"categories":"[ {\"categoryName\":\"Marketing\",\"color\":\"rgb(0, 56, 255)\",\"categoryType\":\"default\"},
-//                  {\"categoryName\":\"Media\",\"color\":\"rgb(255, 199, 2)\",\"categoryType\":\"default\"},
-//                  {\"categoryName\":\"Backoffice\",\"color\":\"rgb(31, 215, 193)\",\"categoryType\":\"default\"},
-//                  {\"categoryName\":\"Design\",\"color\":\"rgb(255, 122, 0)\",\"categoryType\":\"default\"},
-//                  {\"categoryName\":\"Sales\",\"color\":\"rgb(252, 113, 255)\",\"categoryType\":\"default\"}
-//                ]"
-// }
 
 /* ======================================================= INCLUDE HTML ========================================================== */
 /**
@@ -66,17 +82,13 @@ async function includeHTML() {
     try {
         tasks = await loadTasks();
         subtasksLoad = await loadSubtasks();
-        console.log(tasks);
-        console.log(subtasksLoad);
-        debugger;
-        //users = await loadContacts();
+        assignedContacts = await loadAssignedContacts();
         //contacts = loadUsers();
-        //categories = loadCategories();
     } catch(e) {
         let error = 'Fehler beim Laden!';
         console.log(error);
     }
- }
+}
 
 async function loadTasks() {
     const url = 'http://127.0.0.1:8000/tasks/';
@@ -85,6 +97,7 @@ async function loadTasks() {
         headers:{'X-CSRFToken': 'sPmdfd5jrSLCvkIk5hW5WW2lJcsRyqPg'}
     });
     let data = await response.json();
+    console.log(data);
     return data;
 }
 
@@ -95,22 +108,20 @@ async function loadSubtasks() {
         headers:{'X-CSRFToken': 'sPmdfd5jrSLCvkIk5hW5WW2lJcsRyqPg'}
     });
     let data = await response.json();
+    console.log(data);
     return data;
 }
 
-async function loadAssignedTo() {
+async function loadAssignedContacts() {
     const url = 'http://127.0.0.1:8000/assignedTo/';
     response = await fetch(url, {
         method: 'GET',
         headers:{'X-CSRFToken': 'sPmdfd5jrSLCvkIk5hW5WW2lJcsRyqPg'}
     });
-    console.log(response);
     let data = await response.json();
     console.log(data);
     return data;
 }
-
-
 
 /*
     setURL('/smallest_backend_ever');

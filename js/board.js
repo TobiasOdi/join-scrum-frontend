@@ -30,7 +30,6 @@ function updateHTML() {
     filterTasks('inProgress');
     filterTasks('awaitingFeedback');
     filterTasks('done');
-    
     createBubbles();
     checkForEmptyCategories();
 }
@@ -114,16 +113,18 @@ function filterTasks(taskStatus) {
  */
 function calculateProgressbar(element) {
     let numerator = 0;
-    let denominator = element['subtasks'].length;
-    if(element['subtasks'].length !== 0) {
-        for (let j = 0; j < element['subtasks'].length; j++) {
-            if(!element['subtasks'][j]['status'].includes('undone')) {
+    let subtasksCalculate = subtasksLoad.filter(s => s["parent_task_id"] == element.id);
+    let denominator = subtasksCalculate.length;
+
+    if(subtasksCalculate.length !== 0) {
+        for (let j = 0; j < subtasksCalculate.length; j++) {
+            if(!subtasksCalculate[j]['status'].includes('undone')) {
                 numerator++;
             }
         }
         let progress = numerator / denominator;
         progress = progress * 100;
-        generateProgressbarHtml(element, progress, numerator, denominator);
+        generateProgressbarHtml(element, progress, numerator, denominator, subtasksCalculate);
     }
 }
 
@@ -134,11 +135,11 @@ function calculateProgressbar(element) {
  * @param {number} numerator - value "0"
  * @param {number} denominator - length of the subtask array of the current task
  */
-function generateProgressbarHtml(element, progress, numerator, denominator) {
-    if(element['subtasks'].length === 1) {
-        document.getElementById(`boardContainerProgress(${element["taskId"]})`).innerHTML = progressbarTaskTemplate(progress, numerator, denominator);
+function generateProgressbarHtml(element, progress, numerator, denominator, subtasksCalculate) {
+    if(subtasksCalculate.length === 1) {
+        document.getElementById(`boardContainerProgress(${element["id"]})`).innerHTML = progressbarTaskTemplate(progress, numerator, denominator);
     } else {
-        document.getElementById(`boardContainerProgress(${element["taskId"]})`).innerHTML = progressbarTasksTemplate(progress, numerator, denominator);
+        document.getElementById(`boardContainerProgress(${element["id"]})`).innerHTML = progressbarTasksTemplate(progress, numerator, denominator);
     }
 }
 
@@ -147,13 +148,15 @@ function generateProgressbarHtml(element, progress, numerator, denominator) {
  */
 function createBubbles() {
     for (let j = 0; j < tasks.length; j++) {
-        let bubbleTaskId = tasks[j]["taskId"];
-        if(tasks[j]["assignTo"].length <= 3) {
-            let bubbleCount = tasks[j]["assignTo"].length;
-            userBubbles(j, bubbleTaskId, bubbleCount);
-        } else if (tasks[j]["assignTo"].length > 3) {
+        let bubbleTaskId = tasks[j]["id"];
+        let assignedUsers = assignedContacts.filter(c => c["parent_task_id"] == tasks[j]["id"])
+        if(assignedUsers.length <= 3) {
+            let bubbleCount = assignedUsers.length;
+            
+            userBubbles(j, bubbleTaskId, bubbleCount, assignedUsers);
+        } else if (assignedUsers.length > 3) {
             let bubbleCount = 2;
-            userBubbles(j, bubbleTaskId, bubbleCount);
+            userBubbles(j, bubbleTaskId, bubbleCount, assignedUsers);
             getRemainingCount(j, bubbleTaskId);
         }
     }
@@ -165,9 +168,9 @@ function createBubbles() {
  * @param {number} bubbleTaskId - id of the current task
  * @param {number} bubbleCount - count how many bubbles need to be rendered
  */
-function userBubbles(j, bubbleTaskId, bubbleCount) {
+function userBubbles(j, bubbleTaskId, bubbleCount, assignedUsers) {
     for (let i = 0; i < bubbleCount; i++) {
-        let assignedUsers = tasks[j]['assignTo'];
+        //let assignedUsers = tasks[j]['assignTo'];
         getName(assignedUsers, i);
         let name = firstLetters;
         document.getElementById(`userBubble${[bubbleTaskId]}`).innerHTML += `
@@ -184,10 +187,13 @@ function userBubbles(j, bubbleTaskId, bubbleCount) {
  * @returns 
  */
 function getName(assignedUsers, i) {
-    let assignedUser = assignedUsers[i];
-    let existingUser = contacts.find(u => u.contactId == parseInt(assignedUser));
-    let correctUser = contacts.indexOf(existingUser);
-    getFirstletter(correctUser);
+    firstLetters = "";
+    let x = assignedUsers[i]['name'];
+    x = x.split(' ').map(word => word.charAt(0)).join('');
+    let y = assignedUsers[i]['surname'];
+    y = y.split(' ').map(word => word.charAt(0)).join('');
+    firstLetters = x.toUpperCase() + y.toUpperCase();
+    return firstLetters;
 }
 
 
@@ -199,9 +205,10 @@ function getName(assignedUsers, i) {
  */
 function getUserColor(assignedUsers, i) {
     let assignedUser = assignedUsers[i];
-    let existingUser = contacts.find(u => u.contactId == parseInt(assignedUser));
-    let correctUser = contacts.indexOf(existingUser);
-    let assignColor = contacts[correctUser]['contactColor'];
+    //let existingUser = contacts.find(u => u.contactId == parseInt(assignedUser));
+    //let correctUser = contacts.indexOf(existingUser);
+    //let assignColor = contacts[correctUser]['contactColor'];
+    let assignColor = assignedUser['contactColor'];
     return assignColor;
 }
 

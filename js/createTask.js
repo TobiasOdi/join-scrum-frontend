@@ -5,11 +5,11 @@ let allValueCheck = false;
 let categoryValue = "";
 let categoryColorValue = "";
 let categories = [
-    {'categoryName': 'Marketing', 'color': 'rgb(0, 56, 255)', 'categoryType': 'default'},
+/*     {'categoryName': 'Marketing', 'color': 'rgb(0, 56, 255)', 'categoryType': 'default'},
     {'categoryName': 'Media', 'color': 'rgb(255, 199, 2)', 'categoryType': 'default'},
     {'categoryName': 'Backoffice', 'color': 'rgb(31, 215, 193)', 'categoryType': 'default'},
     {'categoryName': 'Design', 'color': 'rgb(255, 122, 0)', 'categoryType': 'default'},
-    {'categoryName': 'Sales', 'color': 'rgb(252, 113, 255)', 'categoryType': 'default'}
+    {'categoryName': 'Sales', 'color': 'rgb(252, 113, 255)', 'categoryType': 'default'} */
 ];
 
 // "categories":"[{\"categoryName\":\"Marketing\",\"color\":\"rgb(0, 56, 255)\",\"categoryType\":\"default\"}, {\"categoryName\":\"Media\",\"color\":\"rgb(255, 199, 2)\",\"categoryType\":\"default\"}, {\"categoryName\":\"Backoffice\",\"color\":\"rgb(31, 215, 193)\",\"categoryType\":\"default\"}, {\"categoryName\":\"Design\",\"color\":\"rgb(255, 122, 0)\",\"categoryType\":\"default\"}, {\"categoryName\":\"Sales\",\"color\":\"rgb(252, 113, 255)\",\"categoryType\":\"default\"}]"
@@ -544,7 +544,8 @@ function saveSelectedPriority(id) {
 /**
  * This function renders the alle the categories from the "categories" array.
  */
-function renderCategories() {
+async function renderCategories() {
+    await fetchCategories();
     let selectCategoryForm = document.getElementById('selectCategoryForm');
     selectCategoryForm.innerHTML = "";
     selectCategoryForm.innerHTML += categoryPlaceholderTemplate();
@@ -560,6 +561,17 @@ function renderCategories() {
             categoryConatiner.innerHTML += newCategoryTemplate(categoryName, categoryColor, i);
         }
     }
+}
+
+async function fetchCategories() {
+    const url = 'http://127.0.0.1:8000/categories/';
+    response = await fetch(url, {
+        method: 'GET',
+        headers:{'X-CSRFToken': 'sPmdfd5jrSLCvkIk5hW5WW2lJcsRyqPg'}
+    });
+    let data = await response.json();
+    console.log("Categories", data);
+    categories = data;
 }
 
 /**

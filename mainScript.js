@@ -1,6 +1,8 @@
 // ================================================ VARIABLES ==========================================================
 let users = [];
 let tasks = [];
+let subtasksLoad = [];
+
 let id;
 
 let black = "#000000";
@@ -22,7 +24,7 @@ let green = "#7AE229";
 /**
  * This function adds the html template to the correct container.
  */
-async function includeHTMLLogin() {
+/* async function includeHTMLLogin() {
     let includeElements = document.querySelectorAll('[w3-include-html]');
     for (let i = 0; i < includeElements.length; i++) {
         let element = includeElements[i];
@@ -34,7 +36,7 @@ async function includeHTMLLogin() {
             element.innerHTML = 'Page not found';
         }
     }
-}
+} */
 
 /**
  * This function adds the html template to the correct container.
@@ -52,7 +54,7 @@ async function includeHTML() {
             element.innerHTML = 'Page not found';
         }
     }
-    //await init();
+    await init();
     counters();
 }
 
@@ -60,7 +62,57 @@ async function includeHTML() {
 /**
  * This function accesses the users, tasks and contacts data that is stored on the ftp server.
  */
-/* async function init() {
+ async function init() {
+    try {
+        tasks = await loadTasks();
+        subtasksLoad = await loadSubtasks();
+        console.log(tasks);
+        console.log(subtasksLoad);
+        debugger;
+        //users = await loadContacts();
+        //contacts = loadUsers();
+        //categories = loadCategories();
+    } catch(e) {
+        let error = 'Fehler beim Laden!';
+        console.log(error);
+    }
+ }
+
+async function loadTasks() {
+    const url = 'http://127.0.0.1:8000/tasks/';
+    response = await fetch(url, {
+        method: 'GET',
+        headers:{'X-CSRFToken': 'sPmdfd5jrSLCvkIk5hW5WW2lJcsRyqPg'}
+    });
+    let data = await response.json();
+    return data;
+}
+
+async function loadSubtasks() {
+    const url = 'http://127.0.0.1:8000/subtasks/';
+    response = await fetch(url, {
+        method: 'GET',
+        headers:{'X-CSRFToken': 'sPmdfd5jrSLCvkIk5hW5WW2lJcsRyqPg'}
+    });
+    let data = await response.json();
+    return data;
+}
+
+async function loadAssignedTo() {
+    const url = 'http://127.0.0.1:8000/assignedTo/';
+    response = await fetch(url, {
+        method: 'GET',
+        headers:{'X-CSRFToken': 'sPmdfd5jrSLCvkIk5hW5WW2lJcsRyqPg'}
+    });
+    console.log(response);
+    let data = await response.json();
+    console.log(data);
+    return data;
+}
+
+
+
+/*
     setURL('/smallest_backend_ever');
     await downloadFromServer();
     users = JSON.parse(backend.getItem('users')) || [];
@@ -70,10 +122,19 @@ async function includeHTML() {
     setInterval(setUserColor, 200);
 } */
 
+    function setUserColor() {
+        userColor = localStorage.getItem('userColor');
+        console.log(userColor);
+        setTimeout(() => {
+            document.getElementById('topNavBarRightImgPicture').style.borderColor = userColor;
+        }, 200);
+    }
+
+
 /**
  * This function sets the color of the user. Border around the user icon in the top right corner.
  */
-function setUserColor() {
+/* function setUserColorOld() {
     if(window.location.href === 'https://join.tobias-odermatt.ch/index.html' + window.location.search) { // => IMMER ANPASSEN!!!
      let queryString = window.location.search.slice(4);
      //let urlId = parseInt(queryString);
@@ -86,7 +147,7 @@ function setUserColor() {
      }
  }
 }
-
+ */
 // ================================================ GENERAL FUNCTIONS ==========================================================
 function getFirstletter(i) {
     firstLetters = "";
@@ -224,6 +285,7 @@ async function login() {
     let fd = new FormData();
     //let token = '{{ csrf_token }}';
     const csrf_token = getCookie("csrftoken");
+    localStorage.setItem('token', csrf_token);
     fd.append('email', emailLog.value);
     fd.append('password', passwordLog.value);
     fd.append('X-CSRFToken', csrf_token);
@@ -236,18 +298,18 @@ async function login() {
               method: 'POST',
               body: fd
             });
-            localStorage.setItem('token', response['token']);
+            //localStorage.setItem('token', response['token']);
             console.log(response);
             let data = await response.json();
             console.log(data);
             //let json = JSON.parse(data);
             //console.log(json);
-            debugger;
             if(data.status == 1) {
               displaySnackbar('pwEmailIncorrect');
             } else if(data.status == 2) {
                 displaySnackbar('userDoesNotExist');
             } else {
+                localStorage.setItem('userColor', data.userColor)
                 window.location.href = "http://127.0.0.1:5500/index.html";
             }
             enableFields();  

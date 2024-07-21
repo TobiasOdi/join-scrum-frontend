@@ -15,7 +15,8 @@ let green = "#7AE229";
 //                  {\"categoryName\":\"Backoffice\",\"color\":\"rgb(31, 215, 193)\",\"categoryType\":\"default\"},
 //                  {\"categoryName\":\"Design\",\"color\":\"rgb(255, 122, 0)\",\"categoryType\":\"default\"},
 //                  {\"categoryName\":\"Sales\",\"color\":\"rgb(252, 113, 255)\",\"categoryType\":\"default\"}
-//                ]"}
+//                ]"
+// }
 
 /* ======================================================= INCLUDE HTML ========================================================== */
 /**
@@ -75,13 +76,13 @@ async function includeHTML() {
 function setUserColor() {
     if(window.location.href === 'https://join.tobias-odermatt.ch/index.html' + window.location.search) { // => IMMER ANPASSEN!!!
      let queryString = window.location.search.slice(4);
-     let urlId = parseInt(queryString);
+     //let urlId = parseInt(queryString);
  
      if(queryString) {
-         let existingUser = users.find(u => u.userId == urlId);
-         let currentUser = users.indexOf(existingUser);
-         let userColor = users[currentUser]['userColor'];
-         document.getElementById('topNavBarRightImgPicture').style.borderColor = userColor;
+         //let existingUser = users.find(u => u.userId == urlId);
+         //let currentUser = users.indexOf(existingUser);
+         //let userColor = users[currentUser]['userColor'];
+         document.getElementById('topNavBarRightImgPicture').style.borderColor = queryString;
      }
  }
 }
@@ -241,6 +242,7 @@ async function login() {
             console.log(data);
             //let json = JSON.parse(data);
             //console.log(json);
+            debugger;
             if(data.status == 1) {
               displaySnackbar('pwEmailIncorrect');
             } else if(data.status == 2) {

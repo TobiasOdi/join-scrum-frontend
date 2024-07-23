@@ -254,9 +254,24 @@ function generateTaskId() {
 /**
  * This function saves the task data in the "tasks" array on the ftp server.
  */
-async function saveTasks() {
-    let tasksAsString = JSON.stringify(tasks);
-    await backend.setItem('tasks', tasksAsString);
+async function saveTasks(id) {
+    let currentTask = tasks.find(i => i.id == id);
+    let currentTaskAsString = JSON.stringify(currentTask);
+    try {
+        let response = await fetch('http://127.0.0.1:8000/saveTask/', {
+            method: 'POST',
+            headers: {
+                "Accept":"application/json", 
+                "Content-Type":"application/json"
+            },
+            body: currentTaskAsString
+          });
+    } catch(e) {
+        console.log('Saving task was not possible', error);
+    }
+ 
+
+    //await backend.setItem('tasks', tasksAsString);
 }
 
 /**
@@ -544,8 +559,7 @@ function saveSelectedPriority(id) {
 /**
  * This function renders the alle the categories from the "categories" array.
  */
-async function renderCategories() {
-    await fetchCategories();
+function renderCategories() {
     let selectCategoryForm = document.getElementById('selectCategoryForm');
     selectCategoryForm.innerHTML = "";
     selectCategoryForm.innerHTML += categoryPlaceholderTemplate();
@@ -561,17 +575,6 @@ async function renderCategories() {
             categoryConatiner.innerHTML += newCategoryTemplate(categoryName, categoryColor, i);
         }
     }
-}
-
-async function fetchCategories() {
-    const url = 'http://127.0.0.1:8000/categories/';
-    response = await fetch(url, {
-        method: 'GET',
-        headers:{'X-CSRFToken': 'sPmdfd5jrSLCvkIk5hW5WW2lJcsRyqPg'}
-    });
-    let data = await response.json();
-    console.log("Categories", data);
-    categories = data;
 }
 
 /**

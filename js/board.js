@@ -3,6 +3,7 @@ let allTasks = [];
 let userChar = [];
 let allUsers = [];
 let currentDraggedElement;
+let currentDraggedTaskId;
 let priorityValueEdit;
 let startWithLetter = [];
 let selectedUsersEdit = [];
@@ -273,7 +274,8 @@ function checkForEmptyCategory(category, categoryText) {
  * @param {number} id - id of the task
  */
 function startDragging(id) {
-    currentDraggedElement = tasks.findIndex(obj => obj.taskId === id);
+    currentDraggedElement = tasks.findIndex(obj => obj.id === id);
+    currentDraggedTaskId = id;
 }
 
 /**
@@ -282,7 +284,7 @@ function startDragging(id) {
  */
 function moveTo(statusCategory) {
     tasks[currentDraggedElement]["statusCategory"] = statusCategory;
-    saveTasks();
+    saveTasks(currentDraggedTaskId);
     updateHTML();
 }
 
@@ -326,8 +328,11 @@ function doNotOpenTask(event) {
  * @param {number} taskId - id of the task
  */
 async function pushToPreviousCategory(category, taskId) {
-    let currentTaskId = tasks.find(t => t.taskId == taskId);
+    console.log(category, taskId)
+    let currentTaskId = tasks.find(t => t.id == taskId);
     let currentTask = tasks.indexOf(currentTaskId);
+    console.log(currentTaskId);
+    console.log(currentTask);
     if(category == 'done') {
         tasks[currentTask]['statusCategory'] = 'awaitingFeedback';
     } else if(category == 'awaitingFeedback') {
@@ -335,7 +340,7 @@ async function pushToPreviousCategory(category, taskId) {
     } else if(category == 'inProgress') {
         tasks[currentTask]['statusCategory'] = 'toDo';
     } 
-    await saveTasks();
+    await saveTasks(taskId);
     updateHTML();
 }
 
@@ -345,7 +350,7 @@ async function pushToPreviousCategory(category, taskId) {
  * @param {*} taskId - id of the task
  */
 async function pushToNextCategory(category, taskId) {
-    let currentTaskId = tasks.find(t => t.taskId == taskId);
+    let currentTaskId = tasks.find(t => t.id == taskId);
     let currentTask = tasks.indexOf(currentTaskId);
     if(category == 'toDo') {
         tasks[currentTask]['statusCategory'] = 'inProgress';
@@ -354,7 +359,7 @@ async function pushToNextCategory(category, taskId) {
     } else if(category == 'awaitingFeedback') {
         tasks[currentTask]['statusCategory'] = 'done';
     }
-    await saveTasks();
+    await saveTasks(taskId);
     updateHTML();
 }
 
@@ -365,13 +370,13 @@ async function pushToNextCategory(category, taskId) {
  */
 function openTask(currentTaskId) {
     document.getElementById('openTaskBackground').style.display = 'flex';
-    let existingTask = tasks.find(u => u.taskId == currentTaskId)
+    let existingTask = tasks.find(u => u.id == currentTaskId)
     let currentTask = tasks.indexOf(existingTask);
     let openTaskContainer = document.getElementById('openTaskContainer');
     openTaskContainer.innerHTML = '';
     openTaskContainer.innerHTML = openTaskTemplate(currentTask);
     renderprioritySymbol(currentTask);
-    renderAssignedUsers(currentTask);
+    renderAssignedUsers(currentTaskId);
     renderSubtasks(currentTask);
 }
 
@@ -395,17 +400,15 @@ function renderprioritySymbol(currentTask) {
  * This function renders the users of the current task.
  * @param {index} currentTask - index of the current task
  */
-function renderAssignedUsers(currentTask) {
-    let assignedUsers = tasks[currentTask]['assignTo'];
-    for (let i = 0; i < assignedUsers.length; i++) {
-        let assignedUser = assignedUsers[i];
-        let existingAssignUser = contacts.find(u => u.contactId == assignedUser)
-        let currentAssignUser = contacts.indexOf(existingAssignUser);
-        getFirstletter(currentAssignUser);
-        let assignName = contacts[currentAssignUser]['name'];
-        let assignSurname = contacts[currentAssignUser]['surname'];
-        //let assignFirstLetters = assignName.charAt(0) + assignSurname.charAt(0);
-        let assignColor = contacts[currentAssignUser]['contactColor'];
+function renderAssignedUsers(currentTaskId) {
+    let assigendUsers = assignedContacts.filter(c => c.parent_task_id = currentTaskId)
+    console.log(assigendUsers);
+    debugger;
+    for (let i = 0; i < assigendUsers.length; i++) {
+        getName(assigendUsers, i);
+        let assignName = assigendUsers[i]['name'];
+        let assignSurname = assigendUsers[i]['surname'];
+        let assignColor = assigendUsers[i]['contactColor'];
         document.getElementById('assignedToContainer').innerHTML += renderAssignedUserTemplate(assignColor, firstLetters, assignName, assignSurname);
     }
 }
@@ -414,8 +417,8 @@ function renderAssignedUsers(currentTask) {
  * This function renders the subtasks of the current task.
  * @param {index} currentTask - index of the current task
  */
-function renderSubtasks(currentTask){
-    let userSubtasks = tasks[currentTask]['subtasks'];
+function renderSubtasks(currentTaskId){
+    let userSubtasks = subtasksLoad.filter(c => c.parent_task_id = currentTaskId)
     if(userSubtasks == "") {
         document.getElementById('subtaskContainer').innerHTML += `
             <div>No subtasks</div>
@@ -459,6 +462,8 @@ async function deleteTask(currentTask) {
  * @param {index} currentTask - index of the current task
  */
 function editTask(currentTask) {
+    console.log(currentTask);
+    debugger;
     subtasksEdit = tasks[currentTask]['subtasks'];
     document.getElementById('openTaskContainer').innerHTML = editOpenTaskTemplate(currentTask);
     let selectCategoryContainer = document.getElementById('selectCategoryContainer');
@@ -642,6 +647,7 @@ async function saveCompletedSubtasks(j, currentTask) {
  * @param {index} currentTask - index of the current task
  */
 async function saveEditedTask(currentTask) {
+    console.log(currentTask);
     if(document.getElementById('titleEdit').value !== "" && selectedUsersEdit.length !== 0) {
         let editCategory = document.getElementById('editSelectCategory').value;
         tasks[currentTask]['category'] = editCategory;

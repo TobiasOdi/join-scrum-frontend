@@ -81,8 +81,13 @@ async function includeHTML() {
  async function init() {
     try {
         tasks = await loadTasks();
+        console.log("Tasks", tasks);
         subtasksLoad = await loadSubtasks();
+        console.log("Subtasks", subtasksLoad);
         assignedContacts = await loadAssignedContacts();
+        console.log("Assigned Contacts", assignedContacts);
+        categories = await fetchCategories();
+        console.log("Categories", categories);
         //contacts = loadUsers();
     } catch(e) {
         let error = 'Fehler beim Laden!';
@@ -97,7 +102,6 @@ async function loadTasks() {
         headers:{'X-CSRFToken': 'sPmdfd5jrSLCvkIk5hW5WW2lJcsRyqPg'}
     });
     let data = await response.json();
-    console.log(data);
     return data;
 }
 
@@ -108,7 +112,6 @@ async function loadSubtasks() {
         headers:{'X-CSRFToken': 'sPmdfd5jrSLCvkIk5hW5WW2lJcsRyqPg'}
     });
     let data = await response.json();
-    console.log(data);
     return data;
 }
 
@@ -119,7 +122,16 @@ async function loadAssignedContacts() {
         headers:{'X-CSRFToken': 'sPmdfd5jrSLCvkIk5hW5WW2lJcsRyqPg'}
     });
     let data = await response.json();
-    console.log(data);
+    return data;
+}
+
+async function fetchCategories() {
+    const url = 'http://127.0.0.1:8000/categories/';
+    response = await fetch(url, {
+        method: 'GET',
+        headers:{'X-CSRFToken': 'sPmdfd5jrSLCvkIk5hW5WW2lJcsRyqPg'}
+    });
+    let data = await response.json();
     return data;
 }
 

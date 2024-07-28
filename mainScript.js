@@ -88,6 +88,9 @@ async function includeHTML() {
         console.log("Assigned Contacts", assignedContacts);
         categories = await fetchCategories();
         console.log("Categories", categories);
+        contacts = await loadContacts();
+        console.log("Categories", contacts);
+
         //contacts = loadUsers();
     } catch(e) {
         let error = 'Fehler beim Laden!';
@@ -127,6 +130,16 @@ async function loadAssignedContacts() {
 
 async function fetchCategories() {
     const url = 'http://127.0.0.1:8000/categories/';
+    response = await fetch(url, {
+        method: 'GET',
+        headers:{'X-CSRFToken': 'sPmdfd5jrSLCvkIk5hW5WW2lJcsRyqPg'}
+    });
+    let data = await response.json();
+    return data;
+}
+
+async function loadContacts() {
+    const url = 'http://127.0.0.1:8000/contacts/';
     response = await fetch(url, {
         method: 'GET',
         headers:{'X-CSRFToken': 'sPmdfd5jrSLCvkIk5hW5WW2lJcsRyqPg'}

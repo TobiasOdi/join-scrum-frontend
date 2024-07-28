@@ -116,7 +116,6 @@ function calculateProgressbar(element) {
     let numerator = 0;
     let subtasksCalculate = subtasksLoad.filter(s => s["parent_task_id"] == element.id);
     let denominator = subtasksCalculate.length;
-
     if(subtasksCalculate.length !== 0) {
         for (let j = 0; j < subtasksCalculate.length; j++) {
             if(!subtasksCalculate[j]['status'].includes('undone')) {
@@ -284,7 +283,7 @@ function startDragging(id) {
  */
 function moveTo(statusCategory) {
     tasks[currentDraggedElement]["statusCategory"] = statusCategory;
-    saveTasks(currentDraggedTaskId);
+    saveTaskCategory(currentDraggedTaskId);
     updateHTML();
 }
 
@@ -321,6 +320,30 @@ function doNotOpenTask(event) {
     event.stopPropagation();
 }
 
+/**
+ * This function saves the task data in the "tasks" array on the ftp server.
+ */
+async function saveTaskCategory(id) {
+    let currentTask = tasks.find(i => i.id == id);
+    let currentTaskAsString = JSON.stringify(currentTask);
+    try {
+        let response = await fetch('http://127.0.0.1:8000/saveTaskCategory/', {
+            method: 'POST',
+            headers: {
+                "Accept":"application/json", 
+                "Content-Type":"application/json"
+            },
+            body: currentTaskAsString
+          });
+    } catch(e) {
+        console.log('Saving task was not possible', error);
+    }
+ 
+
+    //await backend.setItem('tasks', tasksAsString);
+}
+
+
 /* ======================================================================= BOARD TASK FUNCTIONS ================================================================================= */
 /**
  * This function pushes the task to the previous category.
@@ -340,7 +363,7 @@ async function pushToPreviousCategory(category, taskId) {
     } else if(category == 'inProgress') {
         tasks[currentTask]['statusCategory'] = 'toDo';
     } 
-    await saveTasks(taskId);
+    await saveTaskCategory(taskId);
     updateHTML();
 }
 
@@ -359,7 +382,7 @@ async function pushToNextCategory(category, taskId) {
     } else if(category == 'awaitingFeedback') {
         tasks[currentTask]['statusCategory'] = 'done';
     }
-    await saveTasks(taskId);
+    await saveTaskCategory(taskId);
     updateHTML();
 }
 
@@ -370,14 +393,16 @@ async function pushToNextCategory(category, taskId) {
  */
 function openTask(currentTaskId) {
     document.getElementById('openTaskBackground').style.display = 'flex';
-    let existingTask = tasks.find(u => u.id == currentTaskId)
-    let currentTask = tasks.indexOf(existingTask);
+    let currentTask = tasks.find(u => u.id == currentTaskId)
+    let currentCategory = categories.find(c => c.categoryName == currentTask.category);
+    let currentCategoryColor = currentCategory.color;
+    //let currentTask = tasks.indexOf(existingTask);
     let openTaskContainer = document.getElementById('openTaskContainer');
     openTaskContainer.innerHTML = '';
-    openTaskContainer.innerHTML = openTaskTemplate(currentTask);
+    openTaskContainer.innerHTML = openTaskTemplate(currentTask, currentCategoryColor);
     renderprioritySymbol(currentTask);
     renderAssignedUsers(currentTaskId);
-    renderSubtasks(currentTask);
+    renderSubtasks(currentTaskId);
 }
 
 /**
@@ -385,7 +410,7 @@ function openTask(currentTaskId) {
  * @param {index} currentTask - index of the current task
  */
 function renderprioritySymbol(currentTask) {
-    let currentPriority = tasks[currentTask]['priorityValue'];
+    let currentPriority = currentTask.priorityValue;
     let priorityOpenTask = document.getElementById('priorityOpenTask');
     if (currentPriority == 'urgent') {
         priorityOpenTask.innerHTML += `<img id="openTaskImgPriority" src="./img/urgent.svg">`;
@@ -401,9 +426,7 @@ function renderprioritySymbol(currentTask) {
  * @param {index} currentTask - index of the current task
  */
 function renderAssignedUsers(currentTaskId) {
-    let assigendUsers = assignedContacts.filter(c => c.parent_task_id = currentTaskId)
-    console.log(assigendUsers);
-    debugger;
+    let assigendUsers = assignedContacts.filter(c => c.parent_task_id == currentTaskId)
     for (let i = 0; i < assigendUsers.length; i++) {
         getName(assigendUsers, i);
         let assignName = assigendUsers[i]['name'];
@@ -418,7 +441,8 @@ function renderAssignedUsers(currentTaskId) {
  * @param {index} currentTask - index of the current task
  */
 function renderSubtasks(currentTaskId){
-    let userSubtasks = subtasksLoad.filter(c => c.parent_task_id = currentTaskId)
+    let taskForSubtaskId = currentTaskId;
+    let userSubtasks = subtasksLoad.filter(s => s.parent_task_id == currentTaskId);
     if(userSubtasks == "") {
         document.getElementById('subtaskContainer').innerHTML += `
             <div>No subtasks</div>
@@ -461,40 +485,23 @@ async function deleteTask(currentTask) {
  * This function retrieves the task data and lets you edit tehm.
  * @param {index} currentTask - index of the current task
  */
-function editTask(currentTask) {
-    console.log(currentTask);
-    debugger;
-    subtasksEdit = tasks[currentTask]['subtasks'];
+function editTask(currentTaskId, categoryColor) {
+    let currentTask = tasks.find(t => t.id == currentTaskId);
+    subtasksEdit = subtasksLoad.filter(s => s.parent_task_id == currentTaskId);
     document.getElementById('openTaskContainer').innerHTML = editOpenTaskTemplate(currentTask);
     let selectCategoryContainer = document.getElementById('selectCategoryContainer');
-    selectCategoryContainer.style.backgroundColor = tasks[currentTask]['categoryColor'];
+    selectCategoryContainer.style.backgroundColor = categoryColor;
     let titleEdit = document.getElementById('titleEdit');
-    titleEdit.value = tasks[currentTask]['title'];
+    titleEdit.value = currentTask.title;
     let descriptionEdit = document.getElementById('descriptionEdit');
-    descriptionEdit.value = tasks[currentTask]['description'];
+    descriptionEdit.value = currentTask.description;
     renderEditCategories();
-    document.getElementById('editSelectCategory').value = tasks[currentTask]['category'];
+    document.getElementById('editSelectCategory').value = currentTask.category;
     renderUrgency(currentTask);
     renderSubtasksEdit(currentTask);
-    renderAssignedUsersEdit(currentTask);
+    renderAssignedUsersEdit(currentTaskId);
     changeCategoryColor();
     editDateInput();
-}
-
-/**
- * This function prevents the selection of pasted dates.
- */
-function editDateInput() {
-        var dateToday = new Date();
-        var month = dateToday.getMonth() + 1;
-        var day = dateToday.getDate();
-        var year = dateToday.getFullYear();
-        if (month < 10)
-          month = '0' + month.toString();
-        if (day < 10)
-          day = '0' + day.toString();
-        var maxDate = year + '-' + month + '-' + day;
-        document.getElementById('editDueDate').setAttribute('min', maxDate);
 }
 
 /**
@@ -514,14 +521,14 @@ function renderEditCategories() {
  * @param {index} currentTask - index of the current task
  */
 function renderUrgency(currentTask) {
-    if (tasks[currentTask]['priorityValue'] == 'urgent') {
+    if (currentTask.priorityValue == 'urgent') {
         selectUrgentEdit();
-    } else if (tasks[currentTask]['priorityValue'] == 'medium') {
+    } else if (currentTask.priorityValue == 'medium') {
         selectMediumEdit();
-    } else if (tasks[currentTask]['priorityValue'] == 'low') {
+    } else if (currentTask.priorityValue == 'low') {
         selectLowEdit();
     }
-    priorityValueEdit = tasks[currentTask]['priorityValue'];
+    priorityValueEdit = currentTask.priorityValue;
 }
 
 /**
@@ -590,20 +597,15 @@ function deleteSubtaskEdit(j) {
  * This function renders the users of the current task to select more or deselect them.
  * @param {index} currentTask - index of the current task
  */
-function renderAssignedUsersEdit(currentTask) {
+function renderAssignedUsersEdit(currentTaskId) {
     selectedUsersEdit = [];
-    let assignedUsersToCurrentTask = tasks[currentTask]['assignTo'];
-    for (let i = 0; i < assignedUsersToCurrentTask.length; i++) {
-        let assignedUser = assignedUsersToCurrentTask[i];
-        selectedUsersEdit.push(assignedUser);
-    }
-    for (let i = 0; i < contacts.length; i++) {
-        let contactId = contacts[i]['contactId'];
-        //let assignName = contacts[i]['name'];
-        //let assignSurname = contacts[i]['surname'];
-        //let assignFirstLetters = assignName.charAt(0).toUpperCase() + assignSurname.charAt(0).toUpperCase();
-        getFirstletter(i);
-        if (assignedUsersToCurrentTask.includes(contactId)) {
+    selectedUsersEdit = assignedContacts.filter(c => c.parent_task_id == currentTaskId);
+
+    for (let i = 0; i < selectedUsersEdit.length; i++) {
+        const element = selectedUsersEdit[i];
+        getName(selectedUsersEdit, i);
+        let userIsAssigned = contacts.find(u => u.id == selectedUsersEdit.id);
+        if (userIsAssigned) {
             document.getElementById('assignedToContainerEdit').innerHTML += selectedAssignedUsersEditTemplate(contactId, i, firstLetters);
         } else {
             document.getElementById('assignedToContainerEdit').innerHTML += notSelectedAssignedUsersEditTemplate(contactId, i, firstLetters);
@@ -641,6 +643,22 @@ async function saveCompletedSubtasks(j, currentTask) {
         subtasksEdit[j]['status'] = 'done';
     } 
 };
+
+/**
+ * This function prevents the selection of pasted dates.
+ */
+function editDateInput() {
+    var dateToday = new Date();
+    var month = dateToday.getMonth() + 1;
+    var day = dateToday.getDate();
+    var year = dateToday.getFullYear();
+    if (month < 10)
+      month = '0' + month.toString();
+    if (day < 10)
+      day = '0' + day.toString();
+    var maxDate = year + '-' + month + '-' + day;
+    document.getElementById('editDueDate').setAttribute('min', maxDate);
+}
 
 /**
  * This function saves the data of the changed task on the ftp server.

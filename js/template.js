@@ -154,12 +154,12 @@ function progressbarTasksTemplate(progress, numerator, denominator) {
  * @param {number} currentTask - index of the current task
  * @returns 
  */
-function openTaskTemplate(currentTask) {
+function openTaskTemplate(currentTask, categoryColor) {
     return `
         <div id="openTask" class="openTask">
             <div class="openTaskTop">
-                <div style="background-color: ${tasks[currentTask]['categoryColor']};">
-                    <p>${tasks[currentTask]['category']}</p>
+                <div style="background-color: ${categoryColor};">
+                    <p>${currentTask.category}</p>
                 </div>
                 <div onclick="closeTask()">
                     <img src="./img/close.svg">
@@ -167,11 +167,11 @@ function openTaskTemplate(currentTask) {
             </div>
 
             <div class="openTaskHeader">
-                 <h1>${tasks[currentTask]['title']}</h1>
-                 <p>${tasks[currentTask]['description']}</p>
+                 <h1>${currentTask.title}</h1>
+                 <p>${currentTask.description}</p>
                  <div class="openTaskDate">
                     <div>Due date:</div>
-                    <div id="dateNumber">${tasks[currentTask]['dueDate']}</div>
+                    <div id="dateNumber">${currentTask.due_date}</div>
                 </div>
 
                 <div class="openTaskPriority">
@@ -179,7 +179,7 @@ function openTaskTemplate(currentTask) {
                     <div>
                         <div>
                             <button class="prioButton2" id="priorityOpenTask">
-                                <span>${tasks[currentTask]['priorityValue']}</span>
+                                <span>${currentTask.priorityValue}</span>
                             </button>
                         </div>
                     </div>
@@ -207,7 +207,7 @@ function openTaskTemplate(currentTask) {
             <div class="deleteTaskButton" onclick="deleteTask(${currentTask})">
                 <img src="./img/deleteTask.svg">
             </div>
-            <div class="openTaskEditButton" onclick="editTask(${currentTask})">
+            <div class="openTaskEditButton" onclick="editTask(${currentTask.id})">
                 <img src="./img/editWhite.svg">
             </div>
         </div>
@@ -222,7 +222,7 @@ function openTaskTemplate(currentTask) {
  */
 function editOpenTaskTemplate(currentTask) {
     return `
-        <div id="openTask${currentTask}" class="openTask">
+        <div id="openTask${currentTask.id}" class="openTask">
             <div class="openTaskTop">
                 <div id="selectCategoryContainer" class="selectCategoryContainer">
                     <select id="editSelectCategory" class="selectCategory" name="category">
@@ -237,30 +237,30 @@ function editOpenTaskTemplate(currentTask) {
             </div>
 
             <div class="openTaskHeader">
-                <input placeholder="${tasks[currentTask]['title']}" class="titleEdit" id="titleEdit" required="">
-                <input placeholder="${tasks[currentTask]['description']}" class="descriptionEdit" id="descriptionEdit" required="">
+                <input placeholder="${currentTask.title}" class="titleEdit" id="titleEdit" required="">
+                <input placeholder="${currentTask.description}" class="descriptionEdit" id="descriptionEdit" required="">
             </div>
 
             <div class="openTaskMain">
 
                 <div class="openTaskDate openTaskDateEdit">
                     <div>Due date:</div>
-                    <input class="date" type="date" class="editDueDate" id="editDueDate" value="${tasks[currentTask]['dueDate']}">
+                    <input class="date" type="date" class="editDueDate" id="editDueDate" value="${currentTask.due_date}">
                 </div>
 
                 <div class="openTaskPriority openTaskPriorityEdit">
                     <div>Priority:</div>
                     <div>
                         <div class="prioButtons prioButtonsEdit">
-                            <button class="urgent prioButtonEdit" id="urgentEdit" type="button" onclick="selectUrgentEdit(), savePriorityValueEdit('urgent', ${currentTask})">
+                            <button class="urgent prioButtonEdit" id="urgentEdit" type="button" onclick="selectUrgentEdit(), savePriorityValueEdit('urgent', ${currentTask.id})">
                                 <div>Urgent</div>
                                 <img id="imgUrgentEdit" src="./img/urgent.svg">
                             </button>
-                            <button class="medium prioButtonEdit" id="mediumEdit" type="button" onclick="selectMediumEdit(), savePriorityValueEdit('medium', ${currentTask})">
+                            <button class="medium prioButtonEdit" id="mediumEdit" type="button" onclick="selectMediumEdit(), savePriorityValueEdit('medium', ${currentTask.id})">
                                 <div>Medium</div>
                                 <img id="imgMediumEdit" src="./img/medium.svg">
                             </button>
-                            <button class="low prioButtonEdit" id="lowEdit" type="button" onclick="selectLowEdit(), savePriorityValueEdit('low', ${currentTask})">
+                            <button class="low prioButtonEdit" id="lowEdit" type="button" onclick="selectLowEdit(), savePriorityValueEdit('low', ${currentTask.id})">
                                 <div>Low</div>
                                 <img id="imgLowEdit" src="./img/low.svg">
                             </button>
@@ -273,7 +273,7 @@ function editOpenTaskTemplate(currentTask) {
                         <div>Subtasks:</div>
                         <div>
                             <input id="addSubtaskEdit" class="addSubtaskEdit" type="text">
-                            <button onclick="addSubtaskEdit(${currentTask})">Add</button>
+                            <button onclick="addSubtaskEdit(${currentTask.id})">Add</button>
                         </div>
                     </div>
                     <div id="subtaskContainerEdit" class="boardSubtaskContainer">
@@ -294,7 +294,7 @@ function editOpenTaskTemplate(currentTask) {
             <div class="cancelTaskEditButton" onclick="closeTask()">
                 Cancel
             </div>
-            <div class="saveChangesTask" onclick="saveEditedTask(${currentTask})">
+            <div class="saveChangesTask" onclick="saveEditedTask(${currentTask.id})">
                 Save
             </div>
 

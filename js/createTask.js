@@ -20,7 +20,9 @@ let editedTaskPriority = [];
 let firstLettersAvailableUser;
 let prevPriorityElement = null; // keep track of previously clicked button
 let subtasks = [];
-let taskData;
+//let taskData;
+let data;
+
 
 // ================================================ MAIN SITE FUNCTIONS ==========================================================
 /**
@@ -130,8 +132,8 @@ document.addEventListener("DOMContentLoaded", () => {
 async function createTask() {
     if (document.getElementById('title').value && document.getElementById('description').value && document.getElementById('dueDate').value && priority && categoryValue != "" && selectedUsers.length !== 0) {
         setTaskParameters();
-        tasks.push(taskData);
-        await saveTasks();
+        //tasks.push(taskData);
+        await saveCreatedTask();
         displaySnackbar('taskCreated');
         clearAllInputs();
         document.getElementById('avatarPicker').classList.add('d-none');
@@ -146,17 +148,21 @@ async function createTask() {
  * This function sets all the task parameters.
  */
 function setTaskParameters() {
-    let taskId = generateTaskId();
+    //let taskId = generateTaskId();
     // statusCategory > is beeing set wehn clicked on "Add Task" Tab or on plus sign on the board
     let title = document.getElementById('title');
     let description = document.getElementById('description');
     let category = categoryValue;
     let categoryColor = categoryColorValue;
-    let assignTo = selectedUsers;
+    //let assignTo = selectedUsers;
     let dueDate = document.getElementById('dueDate');
     let priorityValue = priority;
-    // subtasks array> is beeing set wehn adding an subtask
-    taskData = {taskId: taskId, statusCategory: statusCategory, title: title.value, description: description.value, category: category, categoryColor: categoryColor, assignTo: assignTo, dueDate: dueDate.value, priorityValue: priorityValue, subtasks: subtasks};
+    //subtasks array> is beeing set wehn adding an subtask
+    //taskData = {taskId: taskId, statusCategory: statusCategory, title: title.value, description: description.value, category: category, categoryColor: categoryColor, assignTo: assignTo, dueDate: dueDate.value, priorityValue: priorityValue, subtasks: subtasks};
+    let taskData = {statusCategory: statusCategory, title: title.value, description: description.value, category: category, due_date: dueDate.value, priorityValue: priorityValue};
+    let assignedToData = selectedUsers;
+    let subtaskData = subtasks;
+    data = [{"taskData": taskData, "assignedToData": assignedToData, "subtaskData": subtaskData}];
 }
 
 /**
@@ -246,10 +252,10 @@ function highlightEmptySelectedUsersInput() {
  * This function returns a ramndly generated number.
  * @returns 
  */
-function generateTaskId() {
+/* function generateTaskId() {
     taskId = Math.floor((Math.random() * 1000000) + 1);
     return taskId;
-}
+} */
 
 /**
  * This function saves the task data in the "tasks" array on the ftp server.
@@ -269,9 +275,22 @@ async function saveTasks(id) {
     } catch(e) {
         console.log('Saving task was not possible', error);
     }
- 
+}
 
-    //await backend.setItem('tasks', tasksAsString);
+async function saveCreatedTask() {
+    let newTaskAsString = JSON.stringify(data);
+    try {
+        let response = await fetch('http://127.0.0.1:8000/saveCreatedTask/', {
+            method: 'POST',
+            headers: {
+                "Accept":"application/json", 
+                "Content-Type":"application/json"
+            },
+            body: newTaskAsString
+          });
+    } catch(e) {
+        console.log('Creating task was not possible', error);
+    }
 }
 
 /**
@@ -288,6 +307,7 @@ function clearAllInputs() {
     checkForSelectedUsers()
     clearPriority();
     subtasks = [];
+    data = [];
     document.getElementById('subtaskList').innerHTML = "";
     clearHighlightedFields();
 }

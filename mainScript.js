@@ -88,14 +88,14 @@ async function includeHTML() {
         console.log("Assigned Contacts", assignedContacts);
         categories = await fetchCategories();
         console.log("Categories", categories);
-        contacts = await loadContacts();
-        console.log("Categories", contacts);
-
-        //contacts = loadUsers();
+        contactsRaw = await loadContacts();
+        console.log("Contacts raw", contactsRaw);
     } catch(e) {
         let error = 'Fehler beim Laden!';
         console.log(error);
     }
+    formatContacts();
+    console.log("Contacts", contacts);
 }
 
 async function loadTasks() {
@@ -148,6 +148,18 @@ async function loadContacts() {
     return data;
 }
 
+function formatContacts() {
+    for (let i = 0; i < contactsRaw[0]['users'].length; i++) {
+        const userd = contactsRaw[0]['users'][i];
+        let existingUser = contactsRaw[1]['userAccounts'].find(u => u.user == userd.pk);
+        if(userd['pk'] == existingUser.user) {
+            userd.color = existingUser.color;
+            userd.phone = existingUser.phone;
+        }
+    }
+    contacts = contactsRaw[0]['users'];
+}
+
 /*
     setURL('/smallest_backend_ever');
     await downloadFromServer();
@@ -187,9 +199,9 @@ async function loadContacts() {
 // ================================================ GENERAL FUNCTIONS ==========================================================
 function getFirstletter(i) {
     firstLetters = "";
-    let x = contacts[i]['name'];
+    let x = contacts[i]['first_name'];
     x = x.split(' ').map(word => word.charAt(0)).join('');
-    let y = contacts[i]['surname'];
+    let y = contacts[i]['last_name'];
     y = y.split(' ').map(word => word.charAt(0)).join('');
     firstLetters = x.toUpperCase() + y.toUpperCase();
     return firstLetters;

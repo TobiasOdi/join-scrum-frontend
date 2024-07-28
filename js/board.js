@@ -600,7 +600,6 @@ function deleteSubtaskEdit(j) {
 function renderAssignedUsersEdit(currentTaskId) {
     selectedUsersEdit = [];
     selectedUsersEdit = assignedContacts.filter(c => c.parent_task_id == currentTaskId);
-
     for (let i = 0; i < selectedUsersEdit.length; i++) {
         const element = selectedUsersEdit[i];
         getName(selectedUsersEdit, i);

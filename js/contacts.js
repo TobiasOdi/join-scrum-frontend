@@ -1,4 +1,5 @@
 // ================================================ VARIABLES ==========================================================
+let contactsRaw = []
 let contacts = [];
 let letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
 
@@ -64,10 +65,10 @@ function renderContacts(i, letter) {
  */
 function sortContacts(letter, sortedContacts) {
     for (let c = 0; c < contactsSorted.length; c++) {
-        let contactListName = contacts[c]['name'];
-        let contactListSurname = contacts[c]['surname'];
+        let contactListName = contacts[c]['first_name'];
+        let contactListSurname = contacts[c]['last_name'];
         let contactEmail = contacts[c]['email'];
-        let contactBgColor = contacts[c]['contactColor'];
+        let contactBgColor = contacts[c]['color'];
         randomBackground();
         //nameGetFirstLetter(c);
         getFirstletter(c);
@@ -187,11 +188,11 @@ function openContactInfo(c) {
     activeContact(c);
     let contactInformation = document.getElementById('contactsContent');
     contactInformation.innerHTML = '';
-    let contactInfoName = contacts[c]['name'];
-    let contactInfoSurname = contacts[c]['surname'];
+    let contactInfoName = contacts[c]['first_name'];
+    let contactInfoSurname = contacts[c]['last_name'];
     let contactInfoEmail = contacts[c]['email'];
     let contactInfoPhone = contacts[c]['phone'];
-    let contactInfoBgColor = contacts[c]['contactColor'];
+    let contactInfoBgColor = contacts[c]['color'];
     //nameGetFirstLetter(c);
     getFirstletter(c);
     contactInformation.innerHTML += contactInfoTemplate(firstLetters, contactInfoName, contactInfoSurname, c, contactInfoEmail, contactInfoPhone, contactInfoBgColor);

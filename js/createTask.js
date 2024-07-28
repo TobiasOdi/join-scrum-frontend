@@ -14,7 +14,6 @@ let categories = [
 
 // "categories":"[{\"categoryName\":\"Marketing\",\"color\":\"rgb(0, 56, 255)\",\"categoryType\":\"default\"}, {\"categoryName\":\"Media\",\"color\":\"rgb(255, 199, 2)\",\"categoryType\":\"default\"}, {\"categoryName\":\"Backoffice\",\"color\":\"rgb(31, 215, 193)\",\"categoryType\":\"default\"}, {\"categoryName\":\"Design\",\"color\":\"rgb(255, 122, 0)\",\"categoryType\":\"default\"}, {\"categoryName\":\"Sales\",\"color\":\"rgb(252, 113, 255)\",\"categoryType\":\"default\"}]"
 
-
 let statusCategory;
 let editedTaskPriority = [];
 let firstLettersAvailableUser;
@@ -160,9 +159,28 @@ function setTaskParameters() {
     //subtasks array> is beeing set wehn adding an subtask
     //taskData = {taskId: taskId, statusCategory: statusCategory, title: title.value, description: description.value, category: category, categoryColor: categoryColor, assignTo: assignTo, dueDate: dueDate.value, priorityValue: priorityValue, subtasks: subtasks};
     let taskData = {statusCategory: statusCategory, title: title.value, description: description.value, category: category, due_date: dueDate.value, priorityValue: priorityValue};
-    let assignedToData = selectedUsers;
+    let assignedToData = compileAssigendToData();
     let subtaskData = subtasks;
     data = [{"taskData": taskData, "assignedToData": assignedToData, "subtaskData": subtaskData}];
+    console.log(data);
+}
+
+function compileAssigendToData() {
+    let assignedToDataRaw = [];
+    for (let i = 0; i < selectedUsers.length; i++) {
+        const element = selectedUsers[i];
+        let existingUser = contacts.find(u => u.pk == element);
+
+        if(existingUser) {
+            assignedToDataRaw.push({
+                "id": existingUser.pk,
+                "contactColor": existingUser.color,
+                "name": existingUser.first_name,
+                "surname": existingUser.last_name
+            })
+        }
+    }
+    return assignedToDataRaw;
 }
 
 /**
@@ -353,10 +371,10 @@ function renderAvailableUsers() {
     let avatarPicker = document.getElementById('avatarPicker');
     avatarPicker.innerHTML = "";
     for (let i = 0; i < contacts.length; i++) {
-        let availableUserId = contacts[i]['contactId'];
-        let userName = contacts[i]['name'];
-        let userSurname = contacts[i]['surname'];
-        let userColor = contacts[i]['contactColor'];
+        let availableUserId = contacts[i]['pk'];
+        let userName = contacts[i]['first_name'];
+        let userSurname = contacts[i]['last_name'];
+        let userColor = contacts[i]['color'];
         getFirstletter(i);
         //getFirstLetterAvailableUser(i);
         avatarPicker.innerHTML += assignUserTemplate(availableUserId, userColor, firstLetters, userName, userSurname);
@@ -433,9 +451,9 @@ function selectedUsersAvailableLessThenTen() {
     selectedUsersPlaceholder.innerHTML = "";
     for (let i = 0; i < selectedUsers.length; i++) {
         let contactId = selectedUsers[i];
-        let existingUser = contacts.find(u => u.contactId == contactId);
+        let existingUser = contacts.find(u => u.pk == contactId);
         let currentUser = contacts.indexOf(existingUser);
-        let userColor = contacts[currentUser]['contactColor'];
+        let userColor = contacts[currentUser]['color'];
         //getFirstLetterAvailableUser(currentUser);
         getFirstletter(currentUser);
         selectedUsersPlaceholder.innerHTML += selectedUsersPlaceholderTemplate(userColor, firstLetters);

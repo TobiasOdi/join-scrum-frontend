@@ -137,7 +137,7 @@ async function createContact() {
     randomBackground();
     checkForPhoneNumber();
     generateContactId();
-    let newContact = {name: document.getElementById('contactName').value, surname: document.getElementById('contactSurname').value, email: document.getElementById('contactEmail').value, phone: contactPhoneValue, contactColor: bgColor, contactId: idContact};
+    let newContact = {first_name: document.getElementById('contactName').value, last_name: document.getElementById('contactSurname').value, email: document.getElementById('contactEmail').value, phone: contactPhoneValue, contactColor: bgColor, contactId: idContact};
     contacts.push(newContact);
     await saveContacts();
     document.getElementById('contactName').value = '';
@@ -257,8 +257,8 @@ function editContact(i) {
  */
 function getCurrentContactData(i) {
     document.getElementById('editContactBackground').style.display = 'flex';
-    document.getElementById('editContactName').value = contacts[i]['name'];
-    document.getElementById('editContactSurname').value = contacts[i]['surname'];
+    document.getElementById('editContactName').value = contacts[i]['first_name'];
+    document.getElementById('editContactSurname').value = contacts[i]['last_name'];
     document.getElementById('editContactEmail').value = contacts[i]['email'];
     document.getElementById('editContactPhone').value = contacts[i]['phone'];
 }
@@ -274,8 +274,8 @@ function renderSaveChangesForm(i) {
  * @param {index} i - index of the current contact
  */
 async function saveChanges(i) {
-    contacts[i]['name'] = document.getElementById('editContactName').value;
-    contacts[i]['surname'] = document.getElementById('editContactSurname').value;
+    contacts[i]['first_name'] = document.getElementById('editContactName').value;
+    contacts[i]['last_name'] = document.getElementById('editContactSurname').value;
     contacts[i]['email'] = document.getElementById('editContactEmail').value;
     contacts[i]['phone'] = document.getElementById('editContactPhone').value;
     checkForPhoneNumberEdit(i);

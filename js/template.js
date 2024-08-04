@@ -5,11 +5,11 @@
  * @param {string} taskStatus - The current category in which the task is.
  * @returns 
  */
-function generateToDoHTMLToDo(element, taskStatus) {
+function generateToDoHTMLToDo(element, taskStatus, categoryColor) {
     return `
         <div class="boardContainer" draggable="true" ondragstart="startDragging(${element["id"]})" onclick="openTask(${element["id"]})">
             <div class="boardContainerTop">
-                <div style = "background-color:${element["categoryColor"]}">
+                <div style = "background-color:${categoryColor}">
                     <div>${element["category"]}</div>
                 </div>
                 <div onclick="doNotOpenTask(event)">
@@ -43,11 +43,11 @@ function generateToDoHTMLToDo(element, taskStatus) {
  * @param {string} taskStatus - The current category in which the task is.
  * @returns 
  */
-function generateToDoHTML(element, taskStatus) {
+function generateToDoHTML(element, taskStatus, categoryColor) {
     return `
         <div class="boardContainer" draggable="true" ondragstart="startDragging(${element["id"]})" onclick="openTask(${element["id"]})">
             <div class="boardContainerTop">
-                <div style = "background-color:${element["categoryColor"]}">
+                <div style = "background-color:${categoryColor}">
                     <div>${element["category"]}</div>
                 </div>
                 <div onclick="doNotOpenTask(event)">
@@ -84,11 +84,11 @@ function generateToDoHTML(element, taskStatus) {
  * @param {string} taskStatus - The current category in which the task is.
  * @returns 
  */
-function generateToDoHTMLDone(element, taskStatus) {
+function generateToDoHTMLDone(element, taskStatus, categoryColor) {
     return `
         <div class="boardContainer" draggable="true" ondragstart="startDragging(${element["id"]})" onclick="openTask(${element["id"]})">
             <div class="boardContainerTop">
-                <div style = "background-color:${element["categoryColor"]}">
+                <div style = "background-color:${categoryColor}">
                     <div>${element["category"]}</div>
                 </div>
                 <div onclick="doNotOpenTask(event)">
@@ -154,11 +154,11 @@ function progressbarTasksTemplate(progress, numerator, denominator) {
  * @param {number} currentTask - index of the current task
  * @returns 
  */
-function openTaskTemplate(currentTask, categoryColor) {
+function openTaskTemplate(currentTask, currentCategory) {
     return `
         <div id="openTask" class="openTask">
             <div class="openTaskTop">
-                <div style="background-color: ${categoryColor};">
+                <div style="background-color: ${currentCategory.color};">
                     <p>${currentTask.category}</p>
                 </div>
                 <div onclick="closeTask()">
@@ -207,7 +207,7 @@ function openTaskTemplate(currentTask, categoryColor) {
             <div class="deleteTaskButton" onclick="deleteTask(${currentTask})">
                 <img src="./img/deleteTask.svg">
             </div>
-            <div class="openTaskEditButton" onclick="editTask(${currentTask.id})">
+            <div class="openTaskEditButton" onclick="editTask(${currentTask.id}, '${currentCategory.color}')">
                 <img src="./img/editWhite.svg">
             </div>
         </div>
@@ -220,7 +220,7 @@ function openTaskTemplate(currentTask, categoryColor) {
  * @param {number} currentTask - index of the current task
  * @returns 
  */
-function editOpenTaskTemplate(currentTask) {
+function editOpenTaskTemplate(currentTask, currentCategoryColor) {
     return `
         <div id="openTask${currentTask.id}" class="openTask">
             <div class="openTaskTop">
@@ -294,7 +294,7 @@ function editOpenTaskTemplate(currentTask) {
             <div class="cancelTaskEditButton" onclick="closeTask()">
                 Cancel
             </div>
-            <div class="saveChangesTask" onclick="saveEditedTask(${currentTask.id})">
+            <div class="saveChangesTask" onclick="saveEditedTask(${currentTask.id}, '${currentCategoryColor}')">
                 Save
             </div>
 
@@ -352,12 +352,12 @@ function editCategoryTemplate(categoryName, categoryColor) {
  * @param {string} subtask - name of the current subtask
  * @returns 
  */
-function subtasksEditUndoneTemplate(j, currentTask, subtask) {
+function subtasksEditUndoneTemplate(currentTaskId, subtask, subtaskId) {
     return `
-        <div class="openSubtask" onclick="saveCompletedSubtasks(${j}, ${currentTask})">
-            <input id="subtask${j}" type="checkbox" value="${j}" checked>
+        <div class="openSubtask" onclick="saveCompletedSubtasks(${currentTaskId}, ${subtaskId})">
+            <input id="subtask${subtaskId}" type="checkbox" value="${subtaskId}" checked>
             <div>${subtask}</div>
-            <img src="./img/delete.svg" onclick="deleteSubtaskEdit(${j}), doNotOpenTask(event)">
+            <img src="./img/delete.svg" onclick="deleteSubtaskEdit(${currentTaskId}, ${subtaskId}), doNotOpenTask(event)">
         </div>
     `;
 }
@@ -369,12 +369,12 @@ function subtasksEditUndoneTemplate(j, currentTask, subtask) {
  * @param {string} subtask - name of the current subtask
  * @returns 
  */
-function subtasksEditTemplate(j, currentTask, subtask) {
+function subtasksEditTemplate(currentTaskId, subtask, subtaskId) {
     return `
-        <div class="openSubtask" onclick="saveCompletedSubtasks(${j}, ${currentTask})">
-            <input id="subtask${j}" type="checkbox" value="${j}">
+        <div class="openSubtask" onclick="saveCompletedSubtasks(${currentTaskId}, ${subtaskId})">
+            <input id="subtask${subtaskId}" type="checkbox" value="${subtaskId}">
             <div>${subtask}</div>
-            <img src="./img/delete.svg" onclick="deleteSubtaskEdit(${j}), doNotOpenTask(event)">
+            <img src="./img/delete.svg" onclick="deleteSubtaskEdit(${currentTaskId}, ${subtaskId}), doNotOpenTask(event)">
         </div>
     `;
 }
@@ -407,14 +407,14 @@ function renderAssignedUserTemplate(assignColor, firstLetters, assignName, assig
  * @param {string} firstLetters - first letters of the assigned user
  * @returns 
  */
-function selectedAssignedUsersEditTemplate(contactId, i, firstLetters) {
+function selectedAssignedUsersEditTemplate(assignedContactId, i, firstLetters, currentTaskId) {
     return `
-        <div id="edit${contactId}" class="avatarContainer avatarSelected" onclick="saveSelectedUsersEdit(${contactId})">
-            <div id="editIcon${contactId}" class="avatar avatarSelectedIcon" style="background-color: ${contacts[i]['contactColor']};">
+        <div id="edit${assignedContactId}" class="avatarContainer avatarSelected" onclick="saveSelectedUsersEdit(${assignedContactId}, ${currentTaskId})">
+            <div id="editIcon${assignedContactId}" class="avatar avatarSelectedIcon" style="background-color: ${contacts[i]['color']};">
                 <div>${firstLetters}</div>
             </div>
             <div class="nameText">
-                <div>${contacts[i]['name']} ${contacts[i]['surname']}</div>
+                <div>${contacts[i]['first_name']} ${contacts[i]['last_name']}</div>
             </div>
         </div>
 `;
@@ -427,14 +427,14 @@ function selectedAssignedUsersEditTemplate(contactId, i, firstLetters) {
  * @param {string} firstLetters - first letters of the assigned user
  * @returns 
  */
-function notSelectedAssignedUsersEditTemplate(contactId, i, firstLetters) {
+function notSelectedAssignedUsersEditTemplate(assignedContactId, i, firstLetters, currentTaskId) {
     return `
-        <div id="edit${contactId}" class="avatarContainer" onclick="saveSelectedUsersEdit(${contactId})">
-            <div id="editIcon${contactId}" class="avatar" style="background-color: ${contacts[i]['contactColor']};">
+        <div id="edit${assignedContactId}" class="avatarContainer" onclick="saveSelectedUsersEdit(${assignedContactId}, ${currentTaskId})">
+            <div id="editIcon${assignedContactId}" class="avatar" style="background-color: ${contacts[i]['color']};">
                 <div>${firstLetters}</div>
             </div>
             <div class="nameText">
-                <div>${contacts[i]['name']} ${contacts[i]['surname']}</div>
+                <div>${contacts[i]['first_name']} ${contacts[i]['last_name']}</div>
             </div>
         </div>
     `;

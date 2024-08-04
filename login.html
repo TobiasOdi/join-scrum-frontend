@@ -68,6 +68,7 @@
           </div>
 
           <form name="login_form" onsubmit="login();return false">
+            <input id="csrfTokenfield" type="hidden" name="csrfmiddlewaretoken">
             <div class="inputContainer">
               <div class="inputFieldContainer">
                 <input id="emailLog" class="inputFields" type="text" name="email" placeholder="Email" required/>

@@ -3,6 +3,7 @@ let users = [];
 let tasks = [];
 let subtasksLoad = [];
 let assignedContacts = [];
+//const csrf_token = '';
 /* let categories = [
     {
         "categoryName": "Marketing",
@@ -222,8 +223,8 @@ async function addUser() {
     let userId = id;
     let userColor = document.getElementById('userColor');
     let userColorValue = userColor.options[userColor.selectedIndex].value;
-    let userData = {name: name.value, surname: surname.value, email: email.value, password: password.value, userColor: userColorValue, userId: userId};
-    let contactData = {name: name.value, surname: surname.value, email: email.value, phone: '-', contactColor: userColorValue, contactId: userId};
+    let userData = {first_name: name.value, last_name: surname.value, email: email.value, password: password.value, userColor: userColorValue, userId: userId};
+    let contactData = {first_name: name.value, last_name: surname.value, email: email.value, phone: '-', contactColor: userColorValue, contactId: userId};
     let user = users.find(u => u.email == email.value);
     validateSignup(userData, contactData, user, name, surname, email, password);
 }
@@ -329,14 +330,16 @@ async function login() {
     disableFields();
     let emailLog = document.getElementById('emailLog');
     let passwordLog = document.getElementById('passwordLog');
+    let csrfTokenfield = document.getElementById('csrfTokenfield');
 
-    let fd = new FormData();
-    //let token = '{{ csrf_token }}';
+
     const csrf_token = getCookie("csrftoken");
-    localStorage.setItem('token', csrf_token);
+    csrfTokenfield.value = csrf_token;
+    let fd = new FormData();
+    //localStorage.setItem('token', csrf_token);
     fd.append('email', emailLog.value);
     fd.append('password', passwordLog.value);
-    fd.append('X-CSRFToken', csrf_token);
+    fd.append('csrfmiddlewaretoken', csrfTokenfield.value);
     console.log(csrf_token);
     if(emailLog.value == '' || passwordLog.value == '') {
         displaySnackbar('missingSignedUp');
@@ -344,6 +347,11 @@ async function login() {
         try {
             let response = await fetch('http://127.0.0.1:8000/login/', {
               method: 'POST',
+              headers: {
+                "X-CSRF-Token": csrf_token
+                //"Content-Type": "application/json"
+              },
+              //mode: "same-origin",
               body: fd
             });
             //localStorage.setItem('token', response['token']);

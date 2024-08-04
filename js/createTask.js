@@ -20,7 +20,7 @@ let firstLettersAvailableUser;
 let prevPriorityElement = null; // keep track of previously clicked button
 let subtasks = [];
 //let taskData;
-let data;
+let data = [];
 
 
 // ================================================ MAIN SITE FUNCTIONS ==========================================================
@@ -158,7 +158,7 @@ function setTaskParameters() {
     let priorityValue = priority;
     //subtasks array> is beeing set wehn adding an subtask
     //taskData = {taskId: taskId, statusCategory: statusCategory, title: title.value, description: description.value, category: category, categoryColor: categoryColor, assignTo: assignTo, dueDate: dueDate.value, priorityValue: priorityValue, subtasks: subtasks};
-    let taskData = {statusCategory: statusCategory, title: title.value, description: description.value, category: category, due_date: dueDate.value, priorityValue: priorityValue};
+    let taskData = [{statusCategory: statusCategory, title: title.value, description: description.value, category: category, due_date: dueDate.value, priorityValue: priorityValue}];
     let assignedToData = compileAssigendToData();
     let subtaskData = subtasks;
     data = [{"taskData": taskData, "assignedToData": assignedToData, "subtaskData": subtaskData}];
@@ -173,14 +173,31 @@ function compileAssigendToData() {
 
         if(existingUser) {
             assignedToDataRaw.push({
-                "id": existingUser.pk,
+                "user_id": existingUser.pk,
                 "contactColor": existingUser.color,
-                "name": existingUser.first_name,
-                "surname": existingUser.last_name
+                "first_name": existingUser.first_name,
+                "last_name": existingUser.last_name
             })
         }
     }
     return assignedToDataRaw;
+}
+
+async function saveCreatedTask() {
+    let newTaskAsString = JSON.stringify(data);
+    try {
+        let response = await fetch('http://127.0.0.1:8000/saveCreatedTask/', {
+            method: 'POST',
+            headers: {
+                "Accept":"application/json", 
+                "Content-Type":"application/json"
+            },
+            body: newTaskAsString
+          });
+    } catch(e) {
+        console.log('Creating task was not possible', error);
+    }
+    data = [];
 }
 
 /**
@@ -278,7 +295,7 @@ function highlightEmptySelectedUsersInput() {
 /**
  * This function saves the task data in the "tasks" array on the ftp server.
  */
-async function saveTasks(id) {
+/* async function saveTasks(id) {
     let currentTask = tasks.find(i => i.id == id);
     let currentTaskAsString = JSON.stringify(currentTask);
     try {
@@ -293,23 +310,7 @@ async function saveTasks(id) {
     } catch(e) {
         console.log('Saving task was not possible', error);
     }
-}
-
-async function saveCreatedTask() {
-    let newTaskAsString = JSON.stringify(data);
-    try {
-        let response = await fetch('http://127.0.0.1:8000/saveCreatedTask/', {
-            method: 'POST',
-            headers: {
-                "Accept":"application/json", 
-                "Content-Type":"application/json"
-            },
-            body: newTaskAsString
-          });
-    } catch(e) {
-        console.log('Creating task was not possible', error);
-    }
-}
+} */
 
 /**
  * This function resets all the parameters.

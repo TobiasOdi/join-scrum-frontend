@@ -1,6 +1,8 @@
 // ================================================ VARIABLES ==========================================================
-let contactsRaw = []
+let contactsRaw = [];
 let contacts = [];
+let contactData = [];
+let editedContactData = [];
 let letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
 
 let contactName = document.getElementById('contactName');
@@ -134,19 +136,25 @@ function doNotClose(event) {
  * This function runs the formvalidation and saves the new contact to the "contacts" array on the ftp server.
  */
 async function createContact() {
-    randomBackground();
-    checkForPhoneNumber();
-    generateContactId();
-    let newContact = {first_name: document.getElementById('contactName').value, last_name: document.getElementById('contactSurname').value, email: document.getElementById('contactEmail').value, phone: contactPhoneValue, contactColor: bgColor, contactId: idContact};
-    contacts.push(newContact);
-    await saveContacts();
-    document.getElementById('contactName').value = '';
-    document.getElementById('contactSurname').value = '';
-    document.getElementById('contactEmail').value = '';
-    document.getElementById('contactPhone').value = '';
-    renderLetters();
-    displaySnackbar('contactCreated');
-    document.getElementById('addContactBackground').style.display = 'none';
+    let existingContact = contacts.find(c => c.email == document.getElementById('contactEmail').value);
+    console.log(existingContact);
+ 
+    if(existingContact) {
+        displaySnackbar('contactAllreadyExists');
+    } else {
+        randomBackground();
+        checkForPhoneNumber();    
+        contactData = {first_name: document.getElementById('contactName').value, last_name: document.getElementById('contactSurname').value, email: document.getElementById('contactEmail').value, phone: contactPhoneValue, color: bgColor};
+        await saveContact();
+        contacts = await loadContacts();
+        document.getElementById('contactName').value = '';
+        document.getElementById('contactSurname').value = '';
+        document.getElementById('contactEmail').value = '';
+        document.getElementById('contactPhone').value = '';
+        renderLetters();
+        displaySnackbar('contactCreated');
+        document.getElementById('addContactBackground').style.display = 'none';   
+    }
 }
 
 /**
@@ -162,22 +170,35 @@ function randomBackground() {
 /**
  * This function generates a contact id.
  */
-function generateContactId() {
+/* function generateContactId() {
     idContact = Math.floor((Math.random() * 1000000) + 1);
     for (let i = 0; i < contacts.length; i++) {
         if(contacts[i]['contactId'].includes === idContact) {
             generateContactId();
         }
     }
-}
+} */
 
 /**
  * This function saves the contact data on the ftp server.
  */
-async function saveContacts() {
-    let contactsAsString = JSON.stringify(contacts);
-    await backend.setItem('contacts', contactsAsString);
+async function saveContact() {
+    let contactsAsString = JSON.stringify(contactData);
+    try {
+        let response = await fetch('http://127.0.0.1:8000/saveCreatedContact/', {
+            method: 'POST',
+            headers: {
+                "Accept":"application/json", 
+                "Content-Type":"application/json"
+            },
+            body: contactsAsString
+          });
+          console.log(contactData);
+    } catch(e) {
+        console.log('Creating task was not possible', error);
+    }
 }
+
 
 // ================================================ OPEN CONTACTS ==========================================================
 /**
@@ -193,7 +214,6 @@ function openContactInfo(c) {
     let contactInfoEmail = contacts[c]['email'];
     let contactInfoPhone = contacts[c]['phone'];
     let contactInfoBgColor = contacts[c]['color'];
-    //nameGetFirstLetter(c);
     getFirstletter(c);
     contactInformation.innerHTML += contactInfoTemplate(firstLetters, contactInfoName, contactInfoSurname, c, contactInfoEmail, contactInfoPhone, contactInfoBgColor);
     document.getElementById('contactIconBig' + c).style.backgroundColor = contactInfoBgColor;
@@ -244,7 +264,7 @@ function backToContactsList() {
 function editContact(i) {
     renderSaveChangesForm(i);
     getCurrentContactData(i);
-    let contactInfoBgColor = contacts[i]['contactColor'];
+    let contactInfoBgColor = contacts[i]['color'];
     //nameGetFirstLetter(i);
     getFirstletter(i);
     document.getElementById('contactImg').innerHTML = contactBigImgTemplate(i, firstLetters);
@@ -274,17 +294,48 @@ function renderSaveChangesForm(i) {
  * @param {index} i - index of the current contact
  */
 async function saveChanges(i) {
-    contacts[i]['first_name'] = document.getElementById('editContactName').value;
-    contacts[i]['last_name'] = document.getElementById('editContactSurname').value;
-    contacts[i]['email'] = document.getElementById('editContactEmail').value;
-    contacts[i]['phone'] = document.getElementById('editContactPhone').value;
-    checkForPhoneNumberEdit(i);
-    await saveContacts();
-    renderLetters();
-    displaySnackbar('contactChangesSaved');
-    document.getElementById('editContactBackground').style.display = 'none';
-    openContactInfo(i);
+    let currentContactId = contacts[i]['id'];
+    console.log(currentContactId);
+    debugger;
+    let existingContact = contacts.find(c => c.email == document.getElementById('editContactEmail').value);
+    if(existingContact) {
+        displaySnackbar('contactAllreadyExists');
+    } else {
+        checkForPhoneNumberEdit(i);
+        editedContactData = {
+            id: currentContactId,
+            first_name: document.getElementById('editContactName').value, 
+            last_name: document.getElementById('editContactSurname').value, 
+            email: document.getElementById('editContactEmail').value, 
+            phone: document.getElementById('editContactPhone').value
+        };
+        await saveChangesToServer();
+        contacts = await loadContacts();
+        renderLetters();
+        displaySnackbar('contactChangesSaved');
+        document.getElementById('editContactBackground').style.display = 'none';
+        openContactInfo(i);
+    }
 }
+
+
+async function saveChangesToServer() {
+    let editedContactAsString = JSON.stringify(editedContactData);
+    try {
+        let response = await fetch('http://127.0.0.1:8000/saveEditedContact/', {
+            method: 'POST',
+            headers: {
+                "Accept":"application/json", 
+                "Content-Type":"application/json"
+            },
+            body: editedContactAsString
+          });
+          console.log(editedContactData);
+    } catch(e) {
+        console.log('Creating task was not possible', error);
+    }
+}
+
 
 /**
  * This function checks if the phone number contains a value and adds a "-" if empty.

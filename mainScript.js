@@ -89,14 +89,12 @@ async function includeHTML() {
         console.log("Assigned Contacts", assignedContacts);
         categories = await fetchCategories();
         console.log("Categories", categories);
-        contactsRaw = await loadContacts();
-        console.log("Contacts raw", contactsRaw);
+        contacts = await loadContacts();
+        console.log("Contacts", contacts);
     } catch(e) {
         let error = 'Fehler beim Laden!';
         console.log(error);
     }
-    formatContacts();
-    console.log("Contacts", contacts);
 }
 
 async function loadTasks() {
@@ -149,7 +147,7 @@ async function loadContacts() {
     return data;
 }
 
-function formatContacts() {
+/* function formatContacts() {
     for (let i = 0; i < contactsRaw[0]['users'].length; i++) {
         const userd = contactsRaw[0]['users'][i];
         let existingUser = contactsRaw[1]['userAccounts'].find(u => u.user == userd.pk);
@@ -159,7 +157,7 @@ function formatContacts() {
         }
     }
     contacts = contactsRaw[0]['users'];
-}
+} */
 
 /*
     setURL('/smallest_backend_ever');

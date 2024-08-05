@@ -697,6 +697,7 @@ function editDateInput() {
  * @param {index} currentTask - index of the current task
  */
 async function saveEditedTask(currentTaskId, currentCategoryColor) {
+    editedData = [];
     let currentTask = tasks.find(t => t.id == currentTaskId);
     let index = tasks.indexOf(currentTask);
     if(document.getElementById('titleEdit').value !== "" && selectedUsersEdit.length !== 0) {
@@ -721,7 +722,7 @@ function setEditedTaskParameters(index, currentTaskId) {
     tasks[index]['description'] = document.getElementById('descriptionEdit').value;
     tasks[index]['due_date'] = document.getElementById('editDueDate').value;
     tasks[index]['priorityValue'] = priorityValueEdit;
-    let taskData = tasks[index];
+    let taskData = [tasks[index]];
     let assignedToData = assignedContacts.filter(a => a.parent_task_id == currentTaskId);
     let subtaskData = subtasksLoad.filter(s => s.parent_task_id == currentTaskId);
     editedData = [{"taskData": taskData, "assignedToData": assignedToData, "subtaskData": subtaskData}];
@@ -743,7 +744,7 @@ function setEditedTaskParameters(index, currentTaskId) {
 
 
 async function saveEditedTaskToServer() {
-    let newTaskAsString = JSON.stringify(data);
+    let editedTaskAsString = JSON.stringify(editedData);
     try {
         let response = await fetch('http://127.0.0.1:8000/saveEditedTask/', {
             method: 'POST',
@@ -751,12 +752,12 @@ async function saveEditedTaskToServer() {
                 "Accept":"application/json", 
                 "Content-Type":"application/json"
             },
-            body: newTaskAsString
+            body: editedTaskAsString
           });
+          console.log(editedData);
     } catch(e) {
         console.log('Creating task was not possible', error);
     }
-    editedData = [];
 }
 
 

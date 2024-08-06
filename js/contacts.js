@@ -1,8 +1,8 @@
 // ================================================ VARIABLES ==========================================================
-let contactsRaw = [];
 let contacts = [];
 let contactData = [];
 let editedContactData = [];
+let existingUserEmail;
 let letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
 
 let contactName = document.getElementById('contactName');
@@ -71,8 +71,7 @@ function sortContacts(letter, sortedContacts) {
         let contactListSurname = contacts[c]['last_name'];
         let contactEmail = contacts[c]['email'];
         let contactBgColor = contacts[c]['color'];
-        randomBackground();
-        //nameGetFirstLetter(c);
+        randomBackgroundColor()
         getFirstletter(c);
         if(firstLetters.charAt(0).toUpperCase() == letter) {
             sortedContacts.innerHTML += sortedContactsTemplate(c, contactBgColor, firstLetters, contactListName, contactListSurname, contactEmail);
@@ -137,12 +136,10 @@ function doNotClose(event) {
  */
 async function createContact() {
     let existingContact = contacts.find(c => c.email == document.getElementById('contactEmail').value);
-    console.log(existingContact);
- 
     if(existingContact) {
         displaySnackbar('contactAllreadyExists');
     } else {
-        randomBackground();
+        randomBackgroundColor();
         checkForPhoneNumber();    
         contactData = {first_name: document.getElementById('contactName').value, last_name: document.getElementById('contactSurname').value, email: document.getElementById('contactEmail').value, phone: contactPhoneValue, color: bgColor};
         await saveContact();
@@ -160,7 +157,7 @@ async function createContact() {
 /**
  * This function generates a random color.
  */
-function randomBackground() {
+function randomBackgroundColor() {
     let x = Math.floor(Math.random() * 256)
     let y = Math.floor(Math.random() * 256)
     let z = Math.floor(Math.random() * 256)
@@ -198,7 +195,6 @@ async function saveContact() {
         console.log('Creating task was not possible', error);
     }
 }
-
 
 // ================================================ OPEN CONTACTS ==========================================================
 /**
@@ -265,10 +261,16 @@ function editContact(i) {
     renderSaveChangesForm(i);
     getCurrentContactData(i);
     let contactInfoBgColor = contacts[i]['color'];
-    //nameGetFirstLetter(i);
     getFirstletter(i);
     document.getElementById('contactImg').innerHTML = contactBigImgTemplate(i, firstLetters);
     document.getElementById('contactImgBg' + i).style.backgroundColor = contactInfoBgColor;
+    existingUserEmail = document.getElementById('editContactEmail').value;
+}
+
+function renderSaveChangesForm(i) {
+    let saveChangesFormContainer = document.getElementById('saveChangesFormContainer');
+    saveChangesFormContainer.innerHTML = "";
+    saveChangesFormContainer.innerHTML += saveChangesFormTemplate(i);
 }
 
 /**
@@ -283,24 +285,15 @@ function getCurrentContactData(i) {
     document.getElementById('editContactPhone').value = contacts[i]['phone'];
 }
 
-function renderSaveChangesForm(i) {
-    let saveChangesFormContainer = document.getElementById('saveChangesFormContainer');
-    saveChangesFormContainer.innerHTML = "";
-    saveChangesFormContainer.innerHTML += saveChangesFormTemplate(i);
-}
-
 /**
  * This function saves the changed contact data.
  * @param {index} i - index of the current contact
  */
 async function saveChanges(i) {
     let currentContactId = contacts[i]['id'];
-    console.log(currentContactId);
-    debugger;
     let existingContact = contacts.find(c => c.email == document.getElementById('editContactEmail').value);
-    if(existingContact) {
-        displaySnackbar('contactAllreadyExists');
-    } else {
+
+    if(existingUserEmail == document.getElementById('editContactEmail').value) {
         checkForPhoneNumberEdit(i);
         editedContactData = {
             id: currentContactId,
@@ -315,9 +308,27 @@ async function saveChanges(i) {
         displaySnackbar('contactChangesSaved');
         document.getElementById('editContactBackground').style.display = 'none';
         openContactInfo(i);
+    } else {
+        if(existingContact) {
+            displaySnackbar('contactAllreadyExists');
+        } else {
+            checkForPhoneNumberEdit(i);
+            editedContactData = {
+                id: currentContactId,
+                first_name: document.getElementById('editContactName').value, 
+                last_name: document.getElementById('editContactSurname').value, 
+                email: document.getElementById('editContactEmail').value, 
+                phone: document.getElementById('editContactPhone').value
+            };
+            await saveChangesToServer();
+            contacts = await loadContacts();
+            renderLetters();
+            displaySnackbar('contactChangesSaved');
+            document.getElementById('editContactBackground').style.display = 'none';
+            openContactInfo(i);        
+        }  
     }
 }
-
 
 async function saveChangesToServer() {
     let editedContactAsString = JSON.stringify(editedContactData);
@@ -335,7 +346,6 @@ async function saveChangesToServer() {
         console.log('Creating task was not possible', error);
     }
 }
-
 
 /**
  * This function checks if the phone number contains a value and adds a "-" if empty.

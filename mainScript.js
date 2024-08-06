@@ -3,7 +3,7 @@ let users = [];
 let tasks = [];
 let subtasksLoad = [];
 let assignedContacts = [];
-//const csrf_token = '';
+
 /* let categories = [
     {
         "categoryName": "Marketing",
@@ -328,36 +328,25 @@ async function login() {
     disableFields();
     let emailLog = document.getElementById('emailLog');
     let passwordLog = document.getElementById('passwordLog');
-    let csrfTokenfield = document.getElementById('csrfTokenfield');
+    const csrfToken = getCookie("csrftoken");
 
-
-    const csrf_token = getCookie("csrftoken");
-    csrfTokenfield.value = csrf_token;
     let fd = new FormData();
-    //localStorage.setItem('token', csrf_token);
     fd.append('email', emailLog.value);
     fd.append('password', passwordLog.value);
-    fd.append('csrfmiddlewaretoken', csrfTokenfield.value);
-    console.log(csrf_token);
+    fd.append('csrfmiddlewaretoken', csrfToken);
     if(emailLog.value == '' || passwordLog.value == '') {
         displaySnackbar('missingSignedUp');
     } else {
         try {
             let response = await fetch('http://127.0.0.1:8000/login/', {
               method: 'POST',
-              headers: {
-                "X-CSRF-Token": csrf_token
-                //"Content-Type": "application/json"
-              },
-              //mode: "same-origin",
+              headers: {"X-CSRFToken": csrfToken},
               body: fd
             });
             //localStorage.setItem('token', response['token']);
             console.log(response);
             let data = await response.json();
             console.log(data);
-            //let json = JSON.parse(data);
-            //console.log(json);
             if(data.status == 1) {
               displaySnackbar('pwEmailIncorrect');
             } else if(data.status == 2) {

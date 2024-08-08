@@ -12,16 +12,12 @@ let categories = [
     {'categoryName': 'Sales', 'color': 'rgb(252, 113, 255)', 'categoryType': 'default'} */
 ];
 
-// "categories":"[{\"categoryName\":\"Marketing\",\"color\":\"rgb(0, 56, 255)\",\"categoryType\":\"default\"}, {\"categoryName\":\"Media\",\"color\":\"rgb(255, 199, 2)\",\"categoryType\":\"default\"}, {\"categoryName\":\"Backoffice\",\"color\":\"rgb(31, 215, 193)\",\"categoryType\":\"default\"}, {\"categoryName\":\"Design\",\"color\":\"rgb(255, 122, 0)\",\"categoryType\":\"default\"}, {\"categoryName\":\"Sales\",\"color\":\"rgb(252, 113, 255)\",\"categoryType\":\"default\"}]"
-
 let statusCategory;
 let editedTaskPriority = [];
 let firstLettersAvailableUser;
 let prevPriorityElement = null; // keep track of previously clicked button
 let subtasks = [];
-//let taskData;
 let data = [];
-
 
 // ================================================ MAIN SITE FUNCTIONS ==========================================================
 /**
@@ -147,7 +143,6 @@ async function createTask() {
  * This function sets all the task parameters.
  */
 function setTaskParameters() {
-    //let taskId = generateTaskId();
     // statusCategory > is beeing set wehn clicked on "Add Task" Tab or on plus sign on the board
     let title = document.getElementById('title');
     let description = document.getElementById('description');
@@ -654,8 +649,9 @@ async function addNewCategory() {
     let newCategory = document.getElementById('newCategory').value;
     if (newCategory !== '') {
         generateCategoryColor();
-        categories.push({'categoryName': newCategory, 'color': categoryColor, 'categoryType': 'custom'});
-        await saveCategories();
+        let categoryData = {'categoryName': newCategory, 'color': categoryColor, 'categoryType': 'custom'};
+        categories.push(categoryData);
+        await saveCategories(categoryData);
         renderCategories();
         document.getElementById('newCategory').value = '';
         displaySnackbar('newCategoryAdded');
@@ -680,9 +676,21 @@ function generateCategoryColor() {
 /**
  * This function saves the "categories" array on the server.
  */
-async function saveCategories() {
-    let categoriesAsString = JSON.stringify(categories);
-    await backend.setItem('categories', categoriesAsString);
+async function saveCategories(categoryData) {
+    let newCategoryAsString = JSON.stringify(categoryData);
+    try {
+        let response = await fetch('http://127.0.0.1:8000/saveCreatedCategory/', {
+            method: 'POST',
+            headers: {
+                "Accept":"application/json", 
+                "Content-Type":"application/json"
+            },
+            body: newCategoryAsString
+          });
+          console.log('categoryData', categoryData);
+    } catch(e) {
+        console.log('Creating category was not possible', error);
+    }
 }
 
 /**
@@ -693,15 +701,33 @@ async function deleteNewCategory(i) {
         categoryValue = "";
         categoryColorValue = "";
     }
+
     categories.splice(i, 1);
-    await saveCategories();
-    let placeholderCategory = document.getElementById('placeholderCategory')
-    placeholderCategory.innerHTML = `
-        <div class="sectorTop" id='placeholderCategory'>
-        <p>Select task category</p>
-        <img src="./img/arrow.svg">
-        </div>`;
-    renderCategories();
+    let currentCategory = categories[i];
+    let deleteCategoryAsString = JSON.stringify(currentCategory);
+
+    try {
+        let response = await fetch('http://127.0.0.1:8000/deleteCategory/', {
+            method: 'POST',
+            headers: {
+                "Accept":"application/json", 
+                "Content-Type":"application/json"
+            },
+            body: deleteCategoryAsString
+          });
+          console.log('currentCategory', currentCategory);
+
+
+          let placeholderCategory = document.getElementById('placeholderCategory')
+          placeholderCategory.innerHTML = `
+              <div class="sectorTop" id='placeholderCategory'>
+              <p>Select task category</p>
+              <img src="./img/arrow.svg">
+              </div>`;
+          renderCategories();
+    } catch(e) {
+        console.log('Creating category was not possible', error);
+    }
 }
 
 /**

@@ -3,6 +3,7 @@ let contacts = [];
 let contactData = [];
 let editedContactData = [];
 let existingUserEmail;
+let activeUserContact;
 let letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
 
 let contactName = document.getElementById('contactName');
@@ -141,7 +142,14 @@ async function createContact() {
     } else {
         randomBackgroundColor();
         checkForPhoneNumber();    
-        contactData = {first_name: document.getElementById('contactName').value, last_name: document.getElementById('contactSurname').value, email: document.getElementById('contactEmail').value, phone: contactPhoneValue, color: bgColor};
+        contactData = {
+            first_name: document.getElementById('contactName').value, 
+            last_name: document.getElementById('contactSurname').value, 
+            email: document.getElementById('contactEmail').value, 
+            phone: contactPhoneValue, 
+            color: bgColor,
+            active_user: null
+        };
         await saveContact();
         contacts = await loadContacts();
         document.getElementById('contactName').value = '';
@@ -265,6 +273,7 @@ function editContact(i) {
     document.getElementById('contactImg').innerHTML = contactBigImgTemplate(i, firstLetters);
     document.getElementById('contactImgBg' + i).style.backgroundColor = contactInfoBgColor;
     existingUserEmail = document.getElementById('editContactEmail').value;
+    activeUserContact = contacts[i]['active_user'];
 }
 
 function renderSaveChangesForm(i) {
@@ -300,33 +309,38 @@ async function saveChanges(i) {
             first_name: document.getElementById('editContactName').value, 
             last_name: document.getElementById('editContactSurname').value, 
             email: document.getElementById('editContactEmail').value, 
-            phone: document.getElementById('editContactPhone').value
+            phone: document.getElementById('editContactPhone').value,
+            //activeUser: contacts[i]['activeUser']
         };
         await saveChangesToServer();
         contacts = await loadContacts();
         renderLetters();
         displaySnackbar('contactChangesSaved');
         document.getElementById('editContactBackground').style.display = 'none';
-        openContactInfo(i);
+        openContactInfo(i);    
     } else {
-        if(existingContact) {
-            displaySnackbar('contactAllreadyExists');
+        if(activeUserContact != null) {
+            displaySnackbar('activeUser');
         } else {
-            checkForPhoneNumberEdit(i);
-            editedContactData = {
-                id: currentContactId,
-                first_name: document.getElementById('editContactName').value, 
-                last_name: document.getElementById('editContactSurname').value, 
-                email: document.getElementById('editContactEmail').value, 
-                phone: document.getElementById('editContactPhone').value
-            };
-            await saveChangesToServer();
-            contacts = await loadContacts();
-            renderLetters();
-            displaySnackbar('contactChangesSaved');
-            document.getElementById('editContactBackground').style.display = 'none';
-            openContactInfo(i);        
-        }  
+            if(existingContact) {
+                displaySnackbar('contactAllreadyExists');
+            } else {
+                checkForPhoneNumberEdit(i);
+                editedContactData = {
+                    id: currentContactId,
+                    first_name: document.getElementById('editContactName').value, 
+                    last_name: document.getElementById('editContactSurname').value, 
+                    email: document.getElementById('editContactEmail').value, 
+                    phone: document.getElementById('editContactPhone').value
+                };
+                await saveChangesToServer();
+                contacts = await loadContacts();
+                renderLetters();
+                displaySnackbar('contactChangesSaved');
+                document.getElementById('editContactBackground').style.display = 'none';
+                openContactInfo(i);        
+            } 
+        }
     }
 }
 
@@ -376,11 +390,27 @@ function checkForPhoneNumberEdit(i) {
  * This function deletes the contact.
  * @param {index} i - index of the current contact
  */
-function deleteContact(i) {
-    contacts.splice(i, 1);
-    saveContacts();
-    document.getElementById('contactsContent').innerHTML = '';
-    renderLetters();
+async function deleteContact(c) {
+    let currentContact = contacts[c];
+    contacts.splice(c, 1);
+    
+    let contactToDeleteAsString = JSON.stringify(currentContact);
+    try {
+        let response = await fetch('http://127.0.0.1:8000/deleteContact/', {
+            method: 'POST',
+            headers: {
+                "Accept":"application/json", 
+                "Content-Type":"application/json"
+            },
+            body: contactToDeleteAsString
+          });
+          console.log(currentContact);
+          document.getElementById('contactsContent').innerHTML = '';
+          renderLetters();
+          await loadContacts();
+    } catch(e) {
+        console.log('Deleting contact was not possible', error);
+    }
 }
 
 

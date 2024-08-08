@@ -325,6 +325,7 @@ function goToSignup() {
  * This function logs you into an existing user account.
  */
 async function login() {
+    document.getElementById('loginScreenLoading').style.display = 'flex';
     disableFields();
     let emailLog = document.getElementById('emailLog');
     let passwordLog = document.getElementById('passwordLog');
@@ -352,7 +353,8 @@ async function login() {
             } else if(data.status == 2) {
                 displaySnackbar('userDoesNotExist');
             } else {
-                localStorage.setItem('userColor', data.userColor)
+                localStorage.setItem('userColor', data.userColor);
+                localStorage.setItem('userName', data.firstname);
                 window.location.href = "http://127.0.0.1:5500/index.html";
             }
             enableFields();  
@@ -361,6 +363,7 @@ async function login() {
             enableFields(); 
           }    
     }
+    document.getElementById('loginScreenLoading').style.display = 'none';
 }
 
 function getCookie(name) {

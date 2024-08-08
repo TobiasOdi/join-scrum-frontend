@@ -422,7 +422,8 @@ a {
 #newCategoryAdded,
 #missingInput,
 #missingSignedUp,
-#contactAllreadyExists {
+#contactAllreadyExists,
+#activeUser {
   visibility: hidden; /* Hidden by default. Visible on click */
   min-width: 280px; /* Set a default minimum width */
   margin-left: -140px; /* Divide value of min-width by 2 */
@@ -449,7 +450,7 @@ a {
   height: 25px;
 }
 
-#missingInput, #missingSignedUp, #contactAllreadyExists {
+#missingInput, #missingSignedUp, #contactAllreadyExists, #activeUser {
   background-color: red;
 }
 
@@ -466,12 +467,13 @@ a {
 #contactCreated.show, 
 #contactChangesSaved.show,
 #missingSignedUpTask.show, 
-#taskCreated.show, 
+#taskCreated.show,
 #newSubtaskAdded.show,
 #newCategoryAdded.show,
 #missingInput.show,
 #missingSignedUp.show,
-#contactAllreadyExists.show {
+#contactAllreadyExists.show,
+#activeUser.show {
   visibility: visible; /* Show the snackbar */
   /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
   However, delay the fade out process for 2.5 seconds */

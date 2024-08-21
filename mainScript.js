@@ -3,34 +3,7 @@ let users = [];
 let tasks = [];
 let subtasksLoad = [];
 let assignedContacts = [];
-
-/* let categories = [
-    {
-        "categoryName": "Marketing",
-        "color": "rgb(0, 56, 255)",
-        "categoryType": "default"
-    },
-    {
-        "categoryName": "Media",
-        "color": "rgb(255, 199, 2)",
-        "categoryType": "default"
-    },    {
-        "categoryName": "Backoffice",
-        "color": "rgb(31, 215, 193)",
-        "categoryType": "default"
-    },    {
-        "categoryName": "Design",
-        "color": "rgb(255, 122, 0)",
-        "categoryType": "default"
-    },    {
-        "categoryName": "Sales",
-        "color": "rgb(252, 113, 255)",
-        "categoryType": "default"
-    }
-]; */
-
 let id;
-
 let black = "#000000";
 let white = "#FFFFFF";
 let orange = "#FF3D00";
@@ -38,23 +11,6 @@ let lightorange = "#FFA800";
 let green = "#7AE229";  
 
 /* ======================================================= INCLUDE HTML ========================================================== */
-/**
- * This function adds the html template to the correct container.
- */
-/* async function includeHTMLLogin() {
-    let includeElements = document.querySelectorAll('[w3-include-html]');
-    for (let i = 0; i < includeElements.length; i++) {
-        let element = includeElements[i];
-        file = element.getAttribute("w3-include-html"); // "includes/header.html"
-        let resp = await fetch(file);
-        if (resp.ok) {
-            element.innerHTML = await resp.text();
-        } else {
-            element.innerHTML = 'Page not found';
-        }
-    }
-} */
-
 /**
  * This function adds the html template to the correct container.
  */
@@ -77,7 +33,7 @@ async function includeHTML() {
 
 // ================================================ INIT FUNCTION ==========================================================
 /**
- * This function accesses the users, tasks and contacts data that is stored on the ftp server.
+ * This function accesses the database and fetches the data form the tasks, subtasks, assignedContacts, Categories and contacts.
  */
  async function init() {
     try {
@@ -87,7 +43,7 @@ async function includeHTML() {
         console.log("Subtasks", subtasksLoad);
         assignedContacts = await loadAssignedContacts();
         console.log("Assigned Contacts", assignedContacts);
-        categories = await fetchCategories();
+        categories = await loadCategories();
         console.log("Categories", categories);
         contacts = await loadContacts();
         console.log("Contacts", contacts);
@@ -127,7 +83,7 @@ async function loadAssignedContacts() {
     return data;
 }
 
-async function fetchCategories() {
+async function loadCategories() {
     const url = 'http://127.0.0.1:8000/categories/';
     response = await fetch(url, {
         method: 'GET',
@@ -147,54 +103,14 @@ async function loadContacts() {
     return data;
 }
 
-/* function formatContacts() {
-    for (let i = 0; i < contactsRaw[0]['users'].length; i++) {
-        const userd = contactsRaw[0]['users'][i];
-        let existingUser = contactsRaw[1]['userAccounts'].find(u => u.user == userd.pk);
-        if(userd['pk'] == existingUser.user) {
-            userd.color = existingUser.color;
-            userd.phone = existingUser.phone;
-        }
-    }
-    contacts = contactsRaw[0]['users'];
-} */
-
-/*
-    setURL('/smallest_backend_ever');
-    await downloadFromServer();
-    users = JSON.parse(backend.getItem('users')) || [];
-    tasks = JSON.parse(backend.getItem('tasks')) || [];
-    contacts = JSON.parse(backend.getItem('contacts')) || [];
-    categories = JSON.parse(backend.getItem('categories')) || [];
-    setInterval(setUserColor, 200);
-} */
-
-    function setUserColor() {
-        userColor = localStorage.getItem('userColor');
-        console.log(userColor);
-        setTimeout(() => {
-            document.getElementById('topNavBarRightImgPicture').style.borderColor = userColor;
-        }, 200);
-    }
-
-
-/**
- * This function sets the color of the user. Border around the user icon in the top right corner.
- */
-/* function setUserColorOld() {
-    if(window.location.href === 'https://join.tobias-odermatt.ch/index.html' + window.location.search) { // => IMMER ANPASSEN!!!
-     let queryString = window.location.search.slice(4);
-     //let urlId = parseInt(queryString);
- 
-     if(queryString) {
-         //let existingUser = users.find(u => u.userId == urlId);
-         //let currentUser = users.indexOf(existingUser);
-         //let userColor = users[currentUser]['userColor'];
-         document.getElementById('topNavBarRightImgPicture').style.borderColor = queryString;
-     }
- }
+function setUserColor() {
+    userColor = localStorage.getItem('userColor');
+    console.log(userColor);
+    setTimeout(() => {
+        document.getElementById('topNavBarRightImgPicture').style.borderColor = userColor;
+    }, 200);
 }
- */
+
 // ================================================ GENERAL FUNCTIONS ==========================================================
 function getFirstletter(i) {
     firstLetters = "";
@@ -205,7 +121,6 @@ function getFirstletter(i) {
     firstLetters = x.toUpperCase() + y.toUpperCase();
     return firstLetters;
 }
-
 
 // ================================================ SIGN UP ==========================================================
 /**
@@ -382,13 +297,18 @@ function getCookie(name) {
     return cookieValue;
 }
 
-
+/**
+ * Disables the form fields.
+ */
 function disableFields() {
     document.getElementById('emailLog').disabled = true;
     document.getElementById('passwordLog').disabled = true;
     document.getElementById('loginButton').disabled = true;
-  }
+}
 
+/**
+ * Enables the form fields.
+ */
 function enableFields() {
     document.getElementById('emailLog').disabled = false;
     document.getElementById('passwordLog').disabled = false;

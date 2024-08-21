@@ -127,11 +127,11 @@ document.addEventListener("DOMContentLoaded", () => {
 async function createTask() {
     if (document.getElementById('title').value && document.getElementById('description').value && document.getElementById('dueDate').value && priority && categoryValue != "" && selectedUsers.length !== 0) {
         setTaskParameters();
-        //tasks.push(taskData);
         await saveCreatedTask();
         displaySnackbar('taskCreated');
         clearAllInputs();
         document.getElementById('avatarPicker').classList.add('d-none');
+        await includeHTML();
         updateHTML();
         displayPage('mainBoardContainerDisplay');
     } else {
@@ -154,13 +154,13 @@ function setTaskParameters() {
     //subtasks array> is beeing set wehn adding an subtask
     //taskData = {taskId: taskId, statusCategory: statusCategory, title: title.value, description: description.value, category: category, categoryColor: categoryColor, assignTo: assignTo, dueDate: dueDate.value, priorityValue: priorityValue, subtasks: subtasks};
     let taskData = [{statusCategory: statusCategory, title: title.value, description: description.value, category: category, due_date: dueDate.value, priorityValue: priorityValue}];
-    let assignedToData = compileAssigendToData();
+    let assignedToData = selectedUsers;
     let subtaskData = subtasks;
     data = [{"taskData": taskData, "assignedToData": assignedToData, "subtaskData": subtaskData}];
     console.log(data);
 }
 
-function compileAssigendToData() {
+/* function compileAssigendToData() {
     let assignedToDataRaw = [];
     for (let i = 0; i < selectedUsers.length; i++) {
         const element = selectedUsers[i];
@@ -176,7 +176,7 @@ function compileAssigendToData() {
         }
     }
     return assignedToDataRaw;
-}
+} */
 
 async function saveCreatedTask() {
     let newTaskAsString = JSON.stringify(data);
@@ -367,7 +367,7 @@ function renderAvailableUsers() {
     let avatarPicker = document.getElementById('avatarPicker');
     avatarPicker.innerHTML = "";
     for (let i = 0; i < contacts.length; i++) {
-        let availableUserId = contacts[i]['pk'];
+        let availableUserId = contacts[i]['id'];
         let userName = contacts[i]['first_name'];
         let userSurname = contacts[i]['last_name'];
         let userColor = contacts[i]['color'];
@@ -412,9 +412,9 @@ function selectUser(availableUserId) {
  */
 function checkForSelectedUsers() {
     let selectedUsersPlaceholder = document.getElementById('selectedUsersPlaceholder');
-    if(selectedUsers == "") {
+    if(selectedUsers == []) {
         selectedUsersEmpty();
-    } else if (selectedUsers !== ""){
+    } else if (selectedUsers != []) {
         selectedUsersAvailable();
     }
 }
@@ -447,7 +447,7 @@ function selectedUsersAvailableLessThenTen() {
     selectedUsersPlaceholder.innerHTML = "";
     for (let i = 0; i < selectedUsers.length; i++) {
         let contactId = selectedUsers[i];
-        let existingUser = contacts.find(u => u.pk == contactId);
+        let existingUser = contacts.find(u => u.id == contactId);
         let currentUser = contacts.indexOf(existingUser);
         let userColor = contacts[currentUser]['color'];
         //getFirstLetterAvailableUser(currentUser);

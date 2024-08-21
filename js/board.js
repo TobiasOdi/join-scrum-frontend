@@ -28,12 +28,11 @@ function updateHTML() {
     //filterInProgress();
     //filterAwaitingFeedback();
     //filterDone();
-
     filterTasks('toDo');
     filterTasks('inProgress');
     filterTasks('awaitingFeedback');
     filterTasks('done');
-    createBubbles();
+    //createBubbles();
     checkForEmptyCategories();
 }
 
@@ -57,6 +56,7 @@ function filterTasks(taskStatus) {
             document.getElementById(taskStatus).innerHTML += generateToDoHTMLDone(element, taskStatus, categoryColor);
         }
         calculateProgressbar(element);
+        createBubbles(element['id']);
     }
 }
 
@@ -151,20 +151,30 @@ function generateProgressbarHtml(element, progress, numerator, denominator, subt
 /**
  * This function renders the assigend users.
  */
-function createBubbles() {
-    for (let j = 0; j < tasks.length; j++) {
+function createBubbles(taskId) {
+    let bubbleTaskId = taskId;
+    let assignedUsers = assignedContacts.filter(c => c["parent_task_id"] == taskId);
+    let assignedUserCount = assignedUsers.length;
+    if(assignedUserCount <= 3) {
+        let bubbleCount = assignedUserCount;    
+        userBubbles(bubbleTaskId, bubbleCount, assignedUsers);
+    } else if (assignedUserCount > 3) {
+        let bubbleCount = 2;
+        userBubbles(bubbleTaskId, bubbleCount, assignedUsers);
+        getRemainingCount(bubbleTaskId, assignedUserCount);
+    }
+/*     for (let j = 0; j < tasks.length; j++) {
         let bubbleTaskId = tasks[j]["id"];
-        let assignedUsers = assignedContacts.filter(c => c["parent_task_id"] == tasks[j]["id"])
+        let assignedUsers = assignedContacts.filter(c => c["parent_task_id"] == tasks[j]["id"]);
         if(assignedUsers.length <= 3) {
-            let bubbleCount = assignedUsers.length;
-            
+            let bubbleCount = assignedUsers.length;    
             userBubbles(j, bubbleTaskId, bubbleCount, assignedUsers);
         } else if (assignedUsers.length > 3) {
             let bubbleCount = 2;
             userBubbles(j, bubbleTaskId, bubbleCount, assignedUsers);
             getRemainingCount(j, bubbleTaskId);
         }
-    }
+    } */
 }
 
 /**
@@ -173,15 +183,16 @@ function createBubbles() {
  * @param {number} bubbleTaskId - id of the current task
  * @param {number} bubbleCount - count how many bubbles need to be rendered
  */
-function userBubbles(j, bubbleTaskId, bubbleCount, assignedUsers) {
+function userBubbles(bubbleTaskId, bubbleCount, assignedUsers) {
     for (let i = 0; i < bubbleCount; i++) {
-        //let assignedUsers = tasks[j]['assignTo'];
-        getName(assignedUsers, i);
+        let assignedUser = assignedUsers[i]['contact_id'];
+        let ac = contacts.find(c => c['id'] == assignedUser);
+        getName(ac);
         let name = firstLetters;
         document.getElementById(`userBubble${[bubbleTaskId]}`).innerHTML += `
-            <div class="userBubbleOne" id="userBubbleOne${[j]}${[i]}">${name}</div>`;
-        let userBubble = document.getElementById(`userBubbleOne${[j]}${[i]}`);
-        userBubble.style.backgroundColor = getUserColor(assignedUsers, i);
+            <div class="userBubbleOne" id="userBubbleOne${bubbleTaskId}${[i]}">${name}</div>`;
+        let userBubble = document.getElementById(`userBubbleOne${bubbleTaskId}${[i]}`);
+        userBubble.style.backgroundColor = getUserColor(ac);
     }
 }
 
@@ -191,11 +202,11 @@ function userBubbles(j, bubbleTaskId, bubbleCount, assignedUsers) {
  * @param {index} i - index
  * @returns 
  */
-function getName(assignedUsers, i) {
+function getName(assignedUser) {
     firstLetters = "";
-    let x = assignedUsers[i]['first_name'];
+    let x = assignedUser['first_name'];
     x = x.split(' ').map(word => word.charAt(0)).join('');
-    let y = assignedUsers[i]['last_name'];
+    let y = assignedUser['last_name'];
     y = y.split(' ').map(word => word.charAt(0)).join('');
     firstLetters = x.toUpperCase() + y.toUpperCase();
     return firstLetters;
@@ -208,12 +219,12 @@ function getName(assignedUsers, i) {
  * @param {index} i - index
  * @returns 
  */
-function getUserColor(assignedUsers, i) {
-    let assignedUser = assignedUsers[i];
+function getUserColor(assignedUser) {
+    //let assignedUser = assignedUser[i];
     //let existingUser = contacts.find(u => u.contactId == parseInt(assignedUser));
     //let correctUser = contacts.indexOf(existingUser);
     //let assignColor = contacts[correctUser]['contactColor'];
-    let assignColor = assignedUser['contactColor'];
+    let assignColor = assignedUser['color'];
     return assignColor;
 }
 
@@ -222,12 +233,12 @@ function getUserColor(assignedUsers, i) {
  * @param {index} j - index of the current task
  * @param {number} bubbleTaskId - id of the bubble
  */
-function getRemainingCount(j, bubbleTaskId) {
-    let remainingCount = tasks[j]["assignTo"].length - 2;
+function getRemainingCount(bubbleTaskId, assignedUserCount) {
+    let remainingCount = assignedUserCount - 2;
     document.getElementById(`userBubble${[bubbleTaskId]}`).innerHTML += `
-        <div class="userBubbleOne" id="userBubbleOne${[j]}${[2]}">+${remainingCount}</div>
+        <div class="userBubbleOne" id="userBubbleOne${bubbleTaskId}${[2]}">+${remainingCount}</div>
         `;
-    let userBubbleOne = document.getElementById(`userBubbleOne${[j]}${[2]}`);
+    let userBubbleOne = document.getElementById(`userBubbleOne${bubbleTaskId}${[2]}`);
     userBubbleOne.style.backgroundColor = "black";
 }
 
@@ -398,13 +409,12 @@ async function pushToNextCategory(category, taskId) {
  */
 function openTask(currentTaskId) {
     document.getElementById('openTaskBackground').style.display = 'flex';
-    let currentTask = tasks.find(u => u.id == currentTaskId)
+    let currentTask = tasks.find(u => u.id == currentTaskId);
+    let currentTaskIndex = tasks.indexOf(currentTask)
     let currentCategory = categories.find(c => c.categoryName == currentTask.category);
-    //let currentCategoryColor = currentCategory.color;
-    //let currentTask = tasks.indexOf(existingTask);
     let openTaskContainer = document.getElementById('openTaskContainer');
     openTaskContainer.innerHTML = '';
-    openTaskContainer.innerHTML = openTaskTemplate(currentTask, currentCategory);
+    openTaskContainer.innerHTML = openTaskTemplate(currentTask, currentCategory, currentTaskIndex);
     renderprioritySymbol(currentTask);
     renderAssignedUsers(currentTaskId);
     renderSubtasks(currentTaskId);
@@ -431,12 +441,14 @@ function renderprioritySymbol(currentTask) {
  * @param {index} currentTask - index of the current task
  */
 function renderAssignedUsers(currentTaskId) {
-    let assigendUsers = assignedContacts.filter(c => c.parent_task_id == currentTaskId)
-    for (let i = 0; i < assigendUsers.length; i++) {
-        getName(assigendUsers, i);
-        let assignName = assigendUsers[i]['first_name'];
-        let assignSurname = assigendUsers[i]['last_name'];
-        let assignColor = assigendUsers[i]['contactColor'];
+    let assignedUsers = assignedContacts.filter(c => c.parent_task_id == currentTaskId)
+    for (let i = 0; i < assignedUsers.length; i++) {
+        let assignedUser = assignedUsers[i]['contact_id'];
+        let ac = contacts.find(c => c['id'] == assignedUser);
+        getName(ac);
+        let assignName = ac['first_name'];
+        let assignSurname = ac['last_name'];
+        let assignColor = ac['color'];
         document.getElementById('assignedToContainer').innerHTML += renderAssignedUserTemplate(assignColor, firstLetters, assignName, assignSurname);
     }
 }
@@ -469,19 +481,41 @@ function renderSubtasks(currentTaskId){
  * This function deletes the current task.
  * @param {index} currentTask - index of the current task
  */
-async function deleteTask(currentTask) {
+async function deleteTask(currentTaskIndex) {
+    let currentTask = tasks[currentTaskIndex];
     if(tasks.length > 1) {
-        tasks.splice(currentTask, 1);
-        await saveTasks();
+        tasks.splice(currentTaskIndex, 1);
+        deleteTaskFromServer(currentTask);
+        await includeHTML();
         await init();
         await initBoard();
         document.getElementById('openTaskBackground').style.display = 'none';
     } else {
-        tasks.splice(currentTask, 1);
-        await saveTasks();
-        await includeHTML()
+        tasks.splice(currentTaskIndex, 1);
+        deleteTaskFromServer(currentTask);
+        await includeHTML();
+        await init();
         await initBoard();
         document.getElementById('openTaskBackground').style.display = 'none';
+    }
+}
+
+async function deleteTaskFromServer(currentTask) {
+    let taskAsString = JSON.stringify(currentTask);
+    const csrfToken = getCookie("csrftoken");
+    try {
+        let response = await fetch('http://127.0.0.1:8000/deleteTask/', {
+            method: 'POST',
+            headers: {
+                "Accept":"application/json", 
+                "Content-Type":"application/json",
+                "X-CSRFToken": csrfToken
+            },
+            body: taskAsString
+            });
+            console.log(currentTask);
+    } catch(e) {
+        console.log('Deleting task was not possible', error);
     }
 }
 
@@ -496,6 +530,8 @@ function editTask(currentTaskId, currentCategoryColor) {
     //let categoryColor = currentCategory.color;
     subtasksEdit = subtasksLoad.filter(s => s.parent_task_id == currentTaskId);
     backupSubtasks = structuredClone(subtasksLoad);
+
+
     document.getElementById('openTaskContainer').innerHTML = editOpenTaskTemplate(currentTask, currentCategoryColor);
     let selectCategoryContainer = document.getElementById('selectCategoryContainer');
     selectCategoryContainer.style.backgroundColor = currentCategoryColor;
@@ -613,12 +649,11 @@ function deleteSubtaskEdit(currentTaskId, subtaskId) {
 function renderAssignedUsersEdit(currentTaskId) {
     selectedUsersEdit = [];
     selectedUsersEdit = assignedContacts.filter(c => c.parent_task_id == currentTaskId);
-
     for (let i = 0; i < contacts.length; i++) {
         const assignedContact = contacts[i];
-        getName(contacts, i);
-        let userIsAssigned = selectedUsersEdit.find(u => u.id == assignedContact.pk);
-        let assignedContactId = assignedContact.pk;
+        getName(assignedContact);
+        let userIsAssigned = selectedUsersEdit.find(u => u.contact_id == assignedContact.id);
+        let assignedContactId = assignedContact.id;
         if (userIsAssigned) {
             document.getElementById('assignedToContainerEdit').innerHTML += selectedAssignedUsersEditTemplate(assignedContactId, i, firstLetters, currentTaskId);
         } else {
@@ -632,23 +667,18 @@ function renderAssignedUsersEdit(currentTaskId) {
  * @param {number} availableUserId - id of the user
  */
 function saveSelectedUsersEdit(assignedContactId, currentTaskId) {
-    let currentContact = contacts.filter(a => a.pk == assignedContactId);
-    document.getElementById()
-    selectedUsersEdit = assignedContacts.filter(c => c.parent_task_id == currentTaskId);
-
-    let user = document.getElementById('edit' + contactId);
-    let userIcon = document.getElementById('editIcon' + contactId);
+    let user = document.getElementById('edit' + assignedContactId);
+    let userIcon = document.getElementById('editIcon' + assignedContactId);
     user.classList.toggle('avatarSelected');
     userIcon.classList.toggle('avatarSelectedIcon');
 
     if(selectedUsersEdit.includes(assignedContactId)){
-        selectedUsersEdit = selectedUsersEdit.filter(a => a != contactId);
-
-
+        selectedUsersEdit = selectedUsersEdit.filter(a => a != assignedContactId);
     } else {
-
-
-        selectedUsersEdit.push(contactId);
+        selectedUsersEdit.push({
+            contact_id: assignedContactId,
+            parent_task_id: currentTaskId
+        });
         assignedContacts.push();
     }
 }
@@ -723,7 +753,8 @@ function setEditedTaskParameters(index, currentTaskId) {
     tasks[index]['due_date'] = document.getElementById('editDueDate').value;
     tasks[index]['priorityValue'] = priorityValueEdit;
     let taskData = [tasks[index]];
-    let assignedToData = assignedContacts.filter(a => a.parent_task_id == currentTaskId);
+    let assignedToData = selectedUsersEdit;
+    //let assignedToData = assignedContacts.filter(a => a.parent_task_id == currentTaskId);
     let subtaskData = subtasksLoad.filter(s => s.parent_task_id == currentTaskId);
     editedData = [{"taskData": taskData, "assignedToData": assignedToData, "subtaskData": subtaskData}];
 }

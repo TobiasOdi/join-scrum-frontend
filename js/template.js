@@ -154,7 +154,7 @@ function progressbarTasksTemplate(progress, numerator, denominator) {
  * @param {number} currentTask - index of the current task
  * @returns 
  */
-function openTaskTemplate(currentTask, currentCategory) {
+function openTaskTemplate(currentTask, currentCategory, currentTaskIndex) {
     return `
         <div id="openTask" class="openTask">
             <div class="openTaskTop">
@@ -204,7 +204,7 @@ function openTaskTemplate(currentTask, currentCategory) {
         </div>
 
         <div class="openTaskButtonContainer">
-            <div class="deleteTaskButton" onclick="deleteTask(${currentTask})">
+            <div class="deleteTaskButton" onclick="deleteTask(${currentTaskIndex})">
                 <img src="./img/deleteTask.svg">
             </div>
             <div class="openTaskEditButton" onclick="editTask(${currentTask.id}, '${currentCategory.color}')">
